@@ -234,6 +234,32 @@
       }
     }
 
+    // Read the requested service from links on the services page.
+    const requestedService = new URLSearchParams(
+      window.location.search
+    ).get("service");
+
+    // Match each service-page name to the booking checkbox value.
+    const serviceMap = {
+      "The Gel Manicure": "Gel Manicure",
+      "The BIAB Manicure": "BIAB Manicure",
+      "The Feel-good Pedicure": "Pedicure",
+      "A Little Nail Art": "Nail Art",
+      "Gentle Gel Removal": "Gel Removal"
+    };
+
+    const requestedValue = serviceMap[requestedService];
+
+    if (requestedValue) {
+      const matchingInput = treatmentInputs.find(function (input) {
+        return input.value === requestedValue;
+      });
+
+      if (matchingInput) {
+        matchingInput.checked = true;
+      }
+    }
+
     treatmentInputs.forEach(function (input) {
       input.addEventListener("change", updatePrice);
     });
@@ -261,6 +287,7 @@
       }
     });
 
+    // Calculate the initial total, including any preselected treatment.
     updatePrice();
   }
 
