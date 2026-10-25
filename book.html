@@ -83,11 +83,44 @@
     </div>
   </div>
 
-  <label class="consent">
+  <div class="price-summary">
+  <h3>Your estimated total</h3>
+  <p>Choose your treatments to calculate the price.</p>
+  <p><strong>Total: £<span id="estimated-total">0</span></strong></p>
+  <p>This is an estimate. Your final price will be confirmed before your booking is accepted.</p>
+</div>  <label class="consent">
     <input type="checkbox" name="Booking acknowledgement" value="Request only" required>
     <span>I understand this is an appointment request, not a confirmed booking. The treatment, price and availability must be confirmed before my appointment is accepted.</span>
   </label>
 
   <button class="btn" type="submit">Send appointment request ↗</button>
 </form></div></div></section></main>
-<footer><div class="footer-inner"><div><div class="footer-brand">hello honey</div><p>A little care. A lot of honey.<br>Beautiful nails. Your place. Your pace.</p><p>At home in North London</p></div><div><h4>Find your moment</h4><div class="footer-links"><a href="services.html">Our services</a><a href="how-it-works.html">How it works</a><a href="gallery.html">The nail edit</a><a href="book.html">Book your moment</a></div></div><div><h4>A little note</h4><p>Coverage is checked by postcode. Treatment prices, timing and any travel costs are agreed before your appointment is confirmed.</p><a href="book.html" class="text-link">Let's find your next appointment</a></div></div><div class="copyright"><span>© 2026 Hello Honey</span><span>Made for your kind of self-care. &nbsp; · &nbsp; <a href="book.html">Privacy & booking information</a></span></div></footer><script src="assets/site.js"></script></body></html>
+<script>
+const prices = {
+  "Gel Manicure": 32,
+  "BIAB Manicure": 42,
+  "BIAB Infills": 38,
+  "Pedicure": 42,
+  "Nail Art": 5,
+  "Gel / BIAB Removal": 8
+};
+
+function updatePrice() {
+  let total = 0;
+
+  document.querySelectorAll('input[name="Treatment"]:checked').forEach(function(item) {
+    total += prices[item.value] || 0;
+  });
+
+  const totalDisplay = document.getElementById("estimated-total");
+  if (totalDisplay) {
+    totalDisplay.textContent = total;
+  }
+}
+
+document.querySelectorAll('input[name="Treatment"]').forEach(function(item) {
+  item.addEventListener("change", updatePrice);
+});
+
+updatePrice();
+</script>  <footer><div class="footer-inner"><div><div class="footer-brand">hello honey</div><p>A little care. A lot of honey.<br>Beautiful nails. Your place. Your pace.</p><p>At home in North London</p></div><div><h4>Find your moment</h4><div class="footer-links"><a href="services.html">Our services</a><a href="how-it-works.html">How it works</a><a href="gallery.html">The nail edit</a><a href="book.html">Book your moment</a></div></div><div><h4>A little note</h4><p>Coverage is checked by postcode. Treatment prices, timing and any travel costs are agreed before your appointment is confirmed.</p><a href="book.html" class="text-link">Let's find your next appointment</a></div></div><div class="copyright"><span>© 2026 Hello Honey</span><span>Made for your kind of self-care. &nbsp; · &nbsp; <a href="book.html">Privacy & booking information</a></span></div></footer><script src="assets/site.js"></script></body></html>
