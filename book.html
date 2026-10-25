@@ -37,14 +37,15 @@
 
     <div class="field">
       <label for="service">Treatment *</label>
-      <select id="service" name="Treatment" required>
-        <option value="">Choose a treatment</option>
-        <option>The Gel Manicure</option>
-        <option>The BIAB Manicure</option>
-        <option>The Feel-good Pedicure</option>
-        <option>A Little Nail Art</option>
-        <option>Gentle Gel Removal</option>
-        <option>Not sure yet</option>
+      
+<div class="treatment-options">
+  <label><input type="checkbox" name="Treatments" value="Gel Manicure"> Gel Manicure</label>
+  <label><input type="checkbox" name="Treatments" value="BIAB Manicure"> BIAB Manicure</label>
+  <label><input type="checkbox" name="Treatments" value="BIAB Infills"> BIAB Infills</label>
+  <label><input type="checkbox" name="Treatments" value="Pedicure"> Pedicure</label>
+  <label><input type="checkbox" name="Treatments" value="Nail Art"> Nail Art</label>
+  <label><input type="checkbox" name="Treatments" value="Gel / BIAB Removal"> Gel / BIAB Removal</label>
+</div>
       </select>
     </div>
 
