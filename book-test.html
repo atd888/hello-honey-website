@@ -1,0 +1,352 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Booking Test | Hello Honey</title>
+  <style>
+    :root {
+      --cream:#fbf7ee;
+      --ink:#423b2b;
+      --olive:#77734b;
+      --gold:#c99b42;
+      --line:#e6ddca;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0; background:var(--cream); color:var(--ink);
+      font:16px/1.55 Arial,sans-serif;
+    }
+    header {
+      text-align:center; padding:26px 16px; background:#fffdf8;
+      border-bottom:1px solid var(--line);
+    }
+    header h1 {
+      margin:0; color:var(--olive);
+      font:2.2rem Georgia,serif;
+    }
+    main { max-width:720px; margin:26px auto; padding:0 16px; }
+    .panel {
+      background:#fff; border:1px solid var(--line);
+      border-radius:14px; padding:22px; margin-bottom:18px;
+    }
+    h2 { font:1.4rem Georgia,serif; margin:0 0 16px; }
+    .notice {
+      background:#fff7df; border:1px solid #ead7a5;
+      border-radius:10px; padding:13px; margin-bottom:18px;
+    }
+    .grid {
+      display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:15px;
+    }
+    .field { margin-bottom:16px; }
+    label,legend { display:block; font-weight:600; margin-bottom:6px; }
+    input,select,textarea {
+      width:100%; padding:11px; border:1px solid #d7cdb8;
+      border-radius:8px; background:white; color:var(--ink); font:inherit;
+    }
+    fieldset { border:0; margin:0; padding:0; }
+    .treatments { display:grid; gap:9px; }
+    .treatment {
+      display:flex; align-items:flex-start; gap:10px;
+      border:1px solid var(--line); border-radius:8px;
+      padding:10px; font-weight:normal; margin:0;
+    }
+    .treatment input,.ack input {
+      width:auto; margin-top:5px; accent-color:var(--olive);
+    }
+    .price {
+      display:flex; justify-content:space-between; gap:12px;
+      margin-top:18px; padding:14px; background:var(--cream);
+      border-radius:9px; font-weight:bold;
+    }
+    .small { font-size:.9rem; color:#716a5c; }
+    .ack { display:flex; gap:10px; margin:18px 0; }
+    .ack input { flex-shrink:0; }
+    button {
+      width:100%; padding:14px; border:0; border-radius:9px;
+      background:var(--olive); color:white; font-weight:bold;
+      font-size:1rem; cursor:pointer;
+    }
+    button:disabled { opacity:.6; cursor:wait; }
+    #result {
+      display:none; margin-top:16px; padding:14px;
+      border-radius:9px; overflow-wrap:anywhere;
+    }
+    #result.success { background:#edf7ed; border:1px solid #b7d9b7; }
+    #result.error { background:#fff0ed; border:1px solid #e6b9af; }
+    .honeypot {
+      position:absolute; left:-10000px; width:1px; height:1px;
+      overflow:hidden;
+    }
+    footer { text-align:center; padding:18px; font-size:.9rem; }
+    @media(max-width:540px) {
+      .grid { grid-template-columns:1fr; gap:0; }
+      .panel { padding:17px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Hello Honey</h1>
+    <p>Good nails. Sweet moments. Your place.</p>
+  </header>
+
+  <main>
+    <div class="notice">
+      <strong>Private test page</strong><br>
+      This page is separate from the live booking form. Requests are not
+      confirmed appointments. No email is sent by this test page.
+    </div>
+
+    <form id="booking-form">
+      <section class="panel">
+        <h2>Your details</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="name">Full name *</label>
+            <input id="name" maxlength="120" required>
+          </div>
+          <div class="field">
+            <label for="email">Email address *</label>
+            <input id="email" type="email" maxlength="254" required>
+          </div>
+          <div class="field">
+            <label for="phone">Phone number *</label>
+            <input id="phone" type="tel" maxlength="40" required>
+          </div>
+          <div class="field">
+            <label for="postcode">Postcode *</label>
+            <input id="postcode" maxlength="20" required>
+          </div>
+        </div>
+        <div class="field">
+          <label for="address">Full address</label>
+          <input id="address" maxlength="300" autocomplete="street-address">
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Select treatments</h2>
+        <fieldset>
+          <legend>Choose at least one *</legend>
+          <div class="treatments">
+            <label class="treatment"><input type="checkbox" name="treatments" value="Gel Manicure"><span>Gel Manicure — £32</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="BIAB Manicure"><span>BIAB Manicure — £42</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="BIAB Infills"><span>BIAB Infills — £38</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="Pedicure"><span>Gel Pedicure — £42</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="Nail Art"><span>Nail Art — £5</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="Gel Removal"><span>Gel Removal — £15 alone / £8 with another treatment</span></label>
+            <label class="treatment"><input type="checkbox" name="treatments" value="BIAB Removal"><span>BIAB Removal — £20 alone / £12 with another treatment</span></label>
+          </div>
+        </fieldset>
+
+        <div class="field" style="margin-top:18px">
+          <label for="existingProduct">What is currently on your nails?</label>
+          <select id="existingProduct">
+            <option value="None / natural nails">Natural nails / nothing</option>
+            <option value="Gel polish">Gel polish</option>
+            <option value="BIAB / builder gel">BIAB / builder gel</option>
+            <option value="Acrylic">Acrylic</option>
+            <option value="Other / not sure">Other / not sure</option>
+          </select>
+        </div>
+
+        <div class="price">
+          <span>Estimated total</span>
+          <span id="total">£0.00</span>
+        </div>
+        <p class="small">The booking service recalculates the total when the request is submitted.</p>
+      </section>
+
+      <section class="panel">
+        <h2>Preferred appointment</h2>
+        <div class="grid">
+          <div class="field">
+            <label for="preferredDate">Preferred date</label>
+            <input id="preferredDate" type="date">
+          </div>
+          <div class="field">
+            <label for="preferredTime">Preferred time</label>
+            <select id="preferredTime">
+              <option value="No preference">No preference</option>
+              <option value="Morning">Morning</option>
+              <option value="Afternoon">Afternoon</option>
+              <option value="Early evening">Early evening</option>
+            </select>
+          </div>
+        </div>
+        <div class="field">
+          <label for="notes">Additional notes</label>
+          <textarea id="notes" rows="4" maxlength="2000"></textarea>
+        </div>
+
+        <div class="honeypot" aria-hidden="true">
+          <label for="website">Leave empty</label>
+          <input id="website" tabindex="-1" autocomplete="off">
+        </div>
+
+        <label class="ack">
+          <input id="acknowledgement" type="checkbox" required>
+          <span>I understand this is only an appointment request, not a confirmed booking.</span>
+        </label>
+
+        <button id="submit-button" type="submit">Send test request</button>
+        <div id="result" role="status" aria-live="polite"></div>
+      </section>
+    </form>
+  </main>
+
+  <footer>Hello Honey · Test page only</footer>
+
+  <script>
+    const SUPABASE_URL = "https://vynemlcijhhlyuydtrhp.supabase.co";
+    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jGrlWd0NLC1p6c4tYmaPDg_PMXPk4AW";
+    const FUNCTION_URL = SUPABASE_URL + "/functions/v1/hello-honey-bookings";
+
+    const prices = {
+      "Gel Manicure": 32,
+      "BIAB Manicure": 42,
+      "BIAB Infills": 38,
+      "Pedicure": 42,
+      "Nail Art": 5
+    };
+
+    const form = document.getElementById("booking-form");
+    const result = document.getElementById("result");
+    const button = document.getElementById("submit-button");
+    const dateInput = document.getElementById("preferredDate");
+
+    function localDateString(date) {
+      return [
+        date.getFullYear(),
+        String(date.getMonth() + 1).padStart(2, "0"),
+        String(date.getDate()).padStart(2, "0")
+      ].join("-");
+    }
+
+    dateInput.min = localDateString(new Date());
+
+    function selectedTreatments() {
+      return Array.from(
+        form.querySelectorAll('input[name="treatments"]:checked')
+      ).map(el => el.value);
+    }
+
+    function calculateTotal(items) {
+      const hasOther = items.some(
+        item => item !== "Gel Removal" && item !== "BIAB Removal"
+      );
+
+      return items.reduce((sum, item) => {
+        if (item === "Gel Removal") return sum + (hasOther ? 8 : 15);
+        if (item === "BIAB Removal") return sum + (hasOther ? 12 : 20);
+        return sum + (prices[item] || 0);
+      }, 0);
+    }
+
+    function updateTotal() {
+      document.getElementById("total").textContent =
+        "£" + calculateTotal(selectedTreatments()).toFixed(2);
+    }
+
+    function showResult(message, type) {
+      result.textContent = message;
+      result.className = type;
+      result.style.display = "block";
+    }
+
+    form.addEventListener("change", updateTotal);
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      if (SUPABASE_PUBLISHABLE_KEY ===
+          "PASTE_YOUR_EXISTING_PUBLISHABLE_KEY_HERE") {
+        showResult("Setup incomplete: add the publishable key from admin.html first.", "error");
+        return;
+      }
+
+      const treatments = selectedTreatments();
+      if (!treatments.length) {
+        showResult("Please select at least one treatment.", "error");
+        return;
+      }
+
+      const payload = {
+        name: document.getElementById("name").value.trim(),
+        email: document.getElementById("email").value.trim(),
+        phone: document.getElementById("phone").value.trim(),
+        postcode: document.getElementById("postcode").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        treatments,
+        existingProduct: document.getElementById("existingProduct").value,
+        preferredDate: dateInput.value || null,
+        preferredTime: document.getElementById("preferredTime").value,
+        notes: document.getElementById("notes").value.trim(),
+        website: document.getElementById("website").value.trim()
+      };
+
+      button.disabled = true;
+      button.textContent = "Sending…";
+      result.style.display = "none";
+      result.textContent = "";
+      result.className = "";
+
+      try {
+        const response = await fetch(FUNCTION_URL, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "apikey": SUPABASE_PUBLISHABLE_KEY,
+            "Authorization": "Bearer " + SUPABASE_PUBLISHABLE_KEY
+          },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json().catch(() => ({}));
+
+        if (!response.ok || data.success !== true) {
+          throw new Error(
+            data.error || "The booking service rejected the request (HTTP " +
+            response.status + ")."
+          );
+        }
+
+        // The function deliberately returns success without an ID
+        // when its honeypot is filled. Do not claim a booking was saved.
+        if (!data.bookingId) {
+          showResult(
+            "The service accepted the request response but returned no booking reference. Check the dashboard before trying again.",
+            "error"
+          );
+          return;
+        }
+
+        showResult(
+          "Test request saved. Reference: " + data.bookingId +
+          ". Estimated total: £" + Number(data.estimatedTotal).toFixed(2) +
+          ". Status should be Pending. No email was sent.",
+          "success"
+        );
+        form.reset();
+        dateInput.min = localDateString(new Date());
+        updateTotal();
+      } catch (error) {
+        showResult(
+          error instanceof Error ? error.message :
+          "Could not reach the booking service. Please try again.",
+          "error"
+        );
+      } finally {
+        button.disabled = false;
+        button.textContent = "Send test request";
+      }
+    });
+
+    updateTotal();
+  </script>
+</body>
+</html>
