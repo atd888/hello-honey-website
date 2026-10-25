@@ -43,8 +43,8 @@
     <label><input type="checkbox" name="Treatment" value="BIAB Infills"> BIAB Infills</label>
     <label><input type="checkbox" name="Treatment" value="Pedicure"> Pedicure</label>
     <label><input type="checkbox" name="Treatment" value="Nail Art"> Nail Art</label>
-    <label><input type="checkbox" name="Treatment" value="Gel / BIAB Removal"> Gel / BIAB Removal</label>
-  </div>
+<label><input type="checkbox" name="Treatment" value="Gel Removal"> Gel Removal — £15</label>
+<label><input type="checkbox" name="Treatment" value="BIAB Removal"> BIAB Removal — £20</label>  </div>
 </div>
 
 
@@ -109,11 +109,31 @@ const prices = {
 };
 
 function updatePrice() {
+  const selected = Array.from(
+    document.querySelectorAll('input[name="Treatment"]:checked')
+  ).map(item => item.value);
+
+  const hasOtherTreatment = selected.some(item =>
+    !["Gel Removal", "BIAB Removal"].includes(item)
+  );
+
   let total = 0;
 
-  document.querySelectorAll('input[name="Treatment"]:checked').forEach(function(item) {
-    total += prices[item.value] || 0;
+  selected.forEach(function(item) {
+    if (item === "Gel Removal") {
+      total += hasOtherTreatment ? 8 : 15;
+    } else if (item === "BIAB Removal") {
+      total += hasOtherTreatment ? 12 : 20;
+    } else {
+      total += prices[item] || 0;
+    }
   });
+
+  const totalDisplay = document.getElementById("estimated-total");
+  if (totalDisplay) {
+    totalDisplay.textContent = total;
+  }
+});
 
   const totalDisplay = document.getElementById("estimated-total");
   if (totalDisplay) {
