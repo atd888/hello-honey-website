@@ -15,7 +15,7 @@
 <header>
   <nav class="nav">
     <a class="brand" href="index.html"><strong>hello honey</strong><span>mobile nail studio</span></a>
-    <button class="menu-toggle" aria-label="Open navigation" aria-expanded="false">☰</button>
+    <button class="menu-toggle" type="button" aria-label="Open navigation" aria-expanded="false">☰</button>
     <div class="navlinks">
       <a href="index.html">Home</a>
       <a href="services.html">Our services</a>
@@ -49,41 +49,42 @@
       </aside>
 
       <div class="form-card">
-        <form action="https://formsubmit.co/artemidaballiu35@gmail.com" method="POST">
+        <form id="booking-form" action="https://formsubmit.co/artemidaballiu35@gmail.com" method="POST">
           <input type="hidden" name="_subject" value="New Hello Honey Appointment Request">
           <input type="hidden" name="Hello Honey Website" value="https://atd888.github.io/hello-honey-website/">
           <input type="hidden" name="_next" value="https://atd888.github.io/hello-honey-website/thank-you.html">
           <input type="hidden" name="_template" value="table">
-          <input type="text" name="_honey" style="display:none">
+          <input type="hidden" name="Estimated total" id="estimated-total-email" value="£0">
+          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
 
           <div class="form-grid">
             <div class="field">
               <label for="name">Your name *</label>
-              <input id="name" name="Name" required placeholder="Your name">
+              <input id="name" name="Name" autocomplete="name" required placeholder="Your name">
             </div>
 
             <div class="field">
               <label for="email">Email address *</label>
-              <input id="email" name="Email" type="email" required placeholder="you@example.com">
+              <input id="email" name="Email" type="email" autocomplete="email" required placeholder="you@example.com">
             </div>
 
             <div class="field">
               <label for="phone">Phone number *</label>
-              <input id="phone" name="Phone" type="tel" required placeholder="Best contact number">
+              <input id="phone" name="Phone" type="tel" autocomplete="tel" required placeholder="Best contact number">
             </div>
 
             <div class="field">
               <label for="postcode">Postcode *</label>
-              <input id="postcode" name="Postcode" required placeholder="e.g. N8">
+              <input id="postcode" name="Postcode" autocomplete="postal-code" required placeholder="e.g. N8">
             </div>
 
             <div class="field full">
               <label for="address">Full address</label>
-              <input id="address" name="Address" placeholder="Address for the appointment">
+              <input id="address" name="Address" autocomplete="street-address" placeholder="Address for the appointment">
             </div>
 
-            <div class="field full">
-              <label>Treatments (select all that apply) *</label>
+            <div class="field full" role="group" aria-labelledby="treatment-label">
+              <label id="treatment-label">Treatments (select all that apply) *</label>
               <div class="treatment-options">
                 <label><input type="checkbox" name="Treatment" value="Gel Manicure"> Gel Manicure — £32</label>
                 <label><input type="checkbox" name="Treatment" value="BIAB Manicure"> BIAB Manicure — £42</label>
@@ -93,7 +94,7 @@
                 <label><input type="checkbox" name="Treatment" value="Gel Removal"> Gel Removal — £15 alone / £8 with another treatment</label>
                 <label><input type="checkbox" name="Treatment" value="BIAB Removal"> BIAB Removal — £20 alone / £12 with another treatment</label>
               </div>
-              <p class="field-note">Please select at least one treatment.</p>
+              <p class="field-note" id="treatment-error" role="alert" hidden>Please select at least one treatment before sending your request.</p>
             </div>
 
             <div class="field">
@@ -128,7 +129,7 @@
             </div>
           </div>
 
-          <div class="price-summary">
+          <div class="price-summary" aria-live="polite">
             <h3>Your estimated total</h3>
             <p>Choose your treatments to calculate the price.</p>
             <p><strong>Total: £<span id="estimated-total">0</span></strong></p>
@@ -146,49 +147,6 @@
     </div>
   </section>
 </main>
-
-<script>
-const prices = {
-  "Gel Manicure": 32,
-  "BIAB Manicure": 42,
-  "BIAB Infills": 38,
-  "Pedicure": 42,
-  "Nail Art": 5,
-  "Gel Removal": 15,
-  "BIAB Removal": 20
-};
-
-function updatePrice() {
-  const selected = Array.from(
-    document.querySelectorAll('input[name="Treatment"]:checked')
-  ).map(item => item.value);
-
-  const hasOtherTreatment = selected.some(item =>
-    item !== "Gel Removal" && item !== "BIAB Removal"
-  );
-
-  let total = 0;
-
-  selected.forEach(function(item) {
-    if (item === "Gel Removal") {
-      total += hasOtherTreatment ? 8 : 15;
-    } else if (item === "BIAB Removal") {
-      total += hasOtherTreatment ? 12 : 20;
-    } else {
-      total += prices[item] || 0;
-    }
-  });
-
-  const totalDisplay = document.getElementById("estimated-total");
-  if (totalDisplay) totalDisplay.textContent = total;
-}
-
-document.querySelectorAll('input[name="Treatment"]').forEach(function(item) {
-  item.addEventListener("change", updatePrice);
-});
-
-updatePrice();
-</script>
 
 <footer>
   <div class="footer-inner">
@@ -217,6 +175,102 @@ updatePrice();
     <span>Made for your kind of self-care. &nbsp; · &nbsp; <a href="book.html">Privacy & booking information</a></span>
   </div>
 </footer>
+
+<script>
+(function () {
+  function initBookingCalculator() {
+    const form = document.getElementById("booking-form");
+    const totalDisplay = document.getElementById("estimated-total");
+    const emailTotal = document.getElementById("estimated-total-email");
+    const treatmentInputs = Array.from(
+      document.querySelectorAll('input[name="Treatment"]')
+    );
+    const treatmentError = document.getElementById("treatment-error");
+
+    if (!form || !totalDisplay || !emailTotal || treatmentInputs.length === 0) {
+      console.error("Hello Honey: booking calculator elements could not be found.");
+      return;
+    }
+
+    let attemptedSubmit = false;
+
+    function updatePrice() {
+      const selected = treatmentInputs.filter(function (input) {
+        return input.checked;
+      });
+
+      const hasOtherTreatment = selected.some(function (input) {
+        return input.value !== "Gel Removal" &&
+               input.value !== "BIAB Removal";
+      });
+
+      const prices = {
+        "Gel Manicure": 32,
+        "BIAB Manicure": 42,
+        "BIAB Infills": 38,
+        "Pedicure": 42,
+        "Nail Art": 5
+      };
+
+      let total = 0;
+
+      selected.forEach(function (input) {
+        if (input.value === "Gel Removal") {
+          total += hasOtherTreatment ? 8 : 15;
+        } else if (input.value === "BIAB Removal") {
+          total += hasOtherTreatment ? 12 : 20;
+        } else {
+          total += prices[input.value] || 0;
+        }
+      });
+
+      totalDisplay.textContent = String(total);
+      emailTotal.value = "£" + total;
+
+      if (treatmentError) {
+        treatmentError.hidden = !(
+          attemptedSubmit && selected.length === 0
+        );
+      }
+    }
+
+    treatmentInputs.forEach(function (input) {
+      input.addEventListener("change", updatePrice);
+    });
+
+    form.addEventListener("submit", function (event) {
+      const hasSelection = treatmentInputs.some(function (input) {
+        return input.checked;
+      });
+
+      attemptedSubmit = true;
+      updatePrice();
+
+      if (!hasSelection) {
+        event.preventDefault();
+
+        if (treatmentError) {
+          treatmentError.hidden = false;
+          treatmentError.scrollIntoView({
+            behavior: "smooth",
+            block: "center"
+          });
+        }
+
+        treatmentInputs[0].focus();
+      }
+    });
+
+    updatePrice();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", initBookingCalculator);
+  } else {
+    initBookingCalculator();
+  }
+})();
+</script>
 
 <script src="assets/site.js"></script>
 </body>
