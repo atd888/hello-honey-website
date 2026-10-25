@@ -108,6 +108,17 @@ const prices = {
   "BIAB Removal Add-on": 12
 };
 
+<script>
+const prices = {
+  "Gel Manicure": 32,
+  "BIAB Manicure": 42,
+  "BIAB Infills": 38,
+  "Pedicure": 42,
+  "Nail Art": 5,
+  "Gel Removal": 15,
+  "BIAB Removal": 20
+};
+
 function updatePrice() {
   const selected = Array.from(
     document.querySelectorAll('input[name="Treatment"]:checked')
@@ -133,17 +144,13 @@ function updatePrice() {
   if (totalDisplay) {
     totalDisplay.textContent = total;
   }
-});
-
-  const totalDisplay = document.getElementById("estimated-total");
-  if (totalDisplay) {
-    totalDisplay.textContent = total;
-  }
 }
 
 document.querySelectorAll('input[name="Treatment"]').forEach(function(item) {
   item.addEventListener("change", updatePrice);
 });
 
+updatePrice();
+</script>
 updatePrice();
 </script>  <footer><div class="footer-inner"><div><div class="footer-brand">hello honey</div><p>A little care. A lot of honey.<br>Beautiful nails. Your place. Your pace.</p><p>At home in North London</p></div><div><h4>Find your moment</h4><div class="footer-links"><a href="services.html">Our services</a><a href="how-it-works.html">How it works</a><a href="gallery.html">The nail edit</a><a href="book.html">Book your moment</a></div></div><div><h4>A little note</h4><p>Coverage is checked by postcode. Treatment prices, timing and any travel costs are agreed before your appointment is confirmed.</p><a href="book.html" class="text-link">Let's find your next appointment</a></div></div><div class="copyright"><span>© 2026 Hello Honey</span><span>Made for your kind of self-care. &nbsp; · &nbsp; <a href="book.html">Privacy & booking information</a></span></div></footer><script src="assets/site.js"></script></body></html>
