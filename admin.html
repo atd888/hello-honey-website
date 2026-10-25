@@ -9,69 +9,142 @@
   <title>Private Booking Dashboard | Hello Honey</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
-    .admin-wrap { max-width: 1000px; margin: 40px auto; padding: 20px; }
+    .admin-wrap {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 20px;
+    }
+
     .admin-card {
-      background: #fff; border: 1px solid #eadfd2;
-      border-radius: 16px; padding: 24px; margin-bottom: 20px;
+      background: #fff;
+      border: 1px solid #eadfd2;
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 20px;
     }
-    .admin-card input, .admin-card textarea {
-      display: block; width: 100%; box-sizing: border-box;
-      padding: 12px; margin: 8px 0 16px;
-      border: 1px solid #d9c9b8; border-radius: 8px;
+
+    .admin-card input,
+    .admin-card textarea {
+      display: block;
+      width: 100%;
+      box-sizing: border-box;
+      padding: 12px;
+      margin: 8px 0 16px;
+      border: 1px solid #d9c9b8;
+      border-radius: 8px;
       font: inherit;
     }
+
     .admin-card button {
-      padding: 11px 16px; margin: 5px 5px 5px 0;
-      border: 0; border-radius: 8px; cursor: pointer;
+      padding: 11px 16px;
+      margin: 5px 5px 5px 0;
+      border: 0;
+      border-radius: 8px;
+      cursor: pointer;
       font: inherit;
     }
-    .approve { background: #526442; color: white; }
-    .decline { background: #8a3e38; color: white; }
-    .secondary { background: #f2e8dc; color: #382c20; }
-    .booking { border-top: 1px solid #eadfd2; padding: 18px 0; overflow-wrap: anywhere; }
-    .message { margin: 12px 0; overflow-wrap: anywhere; }
-    [hidden] { display: none !important; }
+
+    .admin-card button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+
+    .approve {
+      background: #526442;
+      color: white;
+    }
+
+    .decline {
+      background: #8a3e38;
+      color: white;
+    }
+
+    .secondary {
+      background: #f2e8dc;
+      color: #382c20;
+    }
+
+    .booking {
+      border-top: 1px solid #eadfd2;
+      padding: 18px 0;
+      overflow-wrap: anywhere;
+    }
+
+    .message {
+      margin: 12px 0;
+      overflow-wrap: anywhere;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
   </style>
 </head>
 <body>
-  <div class="announcement">Hello Honey · Private booking management</div>
+  <div class="announcement">
+    Hello Honey · Private booking management
+  </div>
 
   <main class="admin-wrap">
     <section class="admin-card">
       <a href="index.html">← Back to Hello Honey website</a>
+
       <h1>Booking dashboard</h1>
       <p>Sign in to review appointment requests and manage decisions.</p>
+
       <p id="message" class="message" role="status" aria-live="polite"></p>
 
       <form id="login-form">
         <label for="email">Email address</label>
-        <input id="email" type="email" autocomplete="username"
-          value="artemidaballiu35@gmail.com" required>
+        <input
+          id="email"
+          type="email"
+          autocomplete="username"
+          value="artemidaballiu35@gmail.com"
+          required
+        >
 
         <label for="password">Password</label>
-        <input id="password" type="password"
-          autocomplete="current-password" required>
+        <input
+          id="password"
+          type="password"
+          autocomplete="current-password"
+          required
+        >
 
         <button class="approve" type="submit">Sign in</button>
       </form>
 
-      <button id="logout" class="secondary" hidden>Sign out</button>
-      <button id="refresh" class="secondary" hidden>Refresh bookings</button>
+      <button id="logout" class="secondary" type="button" hidden>
+        Sign out
+      </button>
+
+      <button id="refresh" class="secondary" type="button" hidden>
+        Refresh bookings
+      </button>
     </section>
 
     <section id="dashboard" class="admin-card" hidden>
       <h2>Appointment requests</h2>
-      <p>Approving or declining changes the booking status.
-        Customer email notifications are not yet configured.</p>
+      <p>
+        Review each request. Approving or declining saves your decision
+        and then attempts to email the customer.
+      </p>
       <div id="bookings"></div>
     </section>
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
   (() => {
-    const SUPABASE_URL = "https://vynemlcijhhlyuydtrhp.supabase.co";
-    const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_jGrlWd0NLC1p6c4tYmaPDg_PMXPk4AW";
+    "use strict";
+
+    const SUPABASE_URL =
+      "https://vynemlcijhhlyuydtrhp.supabase.co";
+
+    const SUPABASE_PUBLISHABLE_KEY =
+      "sb_publishable_jGrlWd0NLC1p6c4tYmaPDg_PMXPk4AW";
 
     const OWNER_ID = "3a7b2b25-39f7-462a-ace9-e98bd57efe2f";
     const OWNER_EMAIL = "artemidaballiu35@gmail.com";
@@ -83,18 +156,29 @@
     const logoutBtn = document.getElementById("logout");
     const refreshBtn = document.getElementById("refresh");
 
-    const say = (text) => { message.textContent = text; };
-    const safeText = (value) =>
-      value == null || value === "" ? "Not provided" : String(value);
+    const processingBookings = new Set();
 
     const client = window.supabase.createClient(
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY
     );
 
-    async function loadBookings() {
-      say("Loading bookings…");
-      bookingsEl.replaceChildren();
+    function say(text) {
+      message.textContent = text;
+    }
+
+    function safeText(value) {
+      return value == null || value === ""
+        ? "Not provided"
+        : String(value);
+    }
+
+    async function loadBookings(options = {}) {
+      const silent = options.silent === true;
+
+      if (!silent) {
+        say("Loading bookings…");
+      }
 
       const { data, error } = await client
         .from("hello_honey_bookings")
@@ -102,13 +186,24 @@
         .order("created_at", { ascending: false });
 
       if (error) {
-        say("Couldn't load bookings: " + error.message);
-        return;
+        if (!silent) {
+          say("Couldn't load bookings: " + error.message);
+        }
+        return false;
       }
 
+      bookingsEl.replaceChildren();
+
       if (!data || data.length === 0) {
-        say("No booking requests found.");
-        return;
+        const empty = document.createElement("p");
+        empty.textContent = "No booking requests found.";
+        bookingsEl.appendChild(empty);
+
+        if (!silent) {
+          say("No booking requests found.");
+        }
+
+        return true;
       }
 
       data.forEach((booking) => {
@@ -126,19 +221,27 @@
           ["Postcode", booking.postcode],
           ["Address", booking.address],
           ["Treatments", (booking.treatments || []).join(", ")],
-          ["Estimated total", "£" + Number(booking.estimated_total).toFixed(2)],
+          [
+            "Estimated total",
+            "£" + Number(booking.estimated_total).toFixed(2)
+          ],
           ["Preferred date", booking.preferred_date],
           ["Preferred time", booking.preferred_time],
           ["Existing product", booking.existing_product],
           ["Notes", booking.customer_notes],
-          ["Submitted", booking.created_at
-            ? new Date(booking.created_at).toLocaleString("en-GB") : ""],
+          [
+            "Submitted",
+            booking.created_at
+              ? new Date(booking.created_at).toLocaleString("en-GB")
+              : ""
+          ],
           ["Admin notes", booking.admin_notes]
         ];
 
         details.forEach(([label, value]) => {
           const p = document.createElement("p");
           const strong = document.createElement("strong");
+
           strong.textContent = label + ": ";
           p.appendChild(strong);
           p.appendChild(document.createTextNode(safeText(value)));
@@ -148,64 +251,182 @@
         if (booking.status === "pending") {
           const label = document.createElement("label");
           label.textContent = "Private admin note (optional)";
+
           const notes = document.createElement("textarea");
           notes.maxLength = 2000;
           notes.placeholder = "Agreed details or reason for declining";
-          card.append(label, notes);
 
           const approve = document.createElement("button");
+          approve.type = "button";
           approve.className = "approve";
           approve.textContent = "Approve booking";
-          approve.addEventListener("click", () =>
-            updateBooking(booking.id, "approved", notes.value));
 
           const decline = document.createElement("button");
+          decline.type = "button";
           decline.className = "decline";
           decline.textContent = "Decline booking";
-          decline.addEventListener("click", () =>
-            updateBooking(booking.id, "declined", notes.value));
 
-          card.append(approve, decline);
+          const decisionButtons = [approve, decline];
+
+          approve.addEventListener("click", () => {
+            updateBooking(
+              booking.id,
+              "approved",
+              notes.value,
+              decisionButtons
+            );
+          });
+
+          decline.addEventListener("click", () => {
+            updateBooking(
+              booking.id,
+              "declined",
+              notes.value,
+              decisionButtons
+            );
+          });
+
+          card.append(label, notes, approve, decline);
         }
 
         bookingsEl.appendChild(card);
       });
 
-      say("Bookings loaded.");
+      if (!silent) {
+        say("Bookings loaded.");
+      }
+
+      return true;
     }
 
-    async function updateBooking(id, status, adminNotes) {
-      if (!["approved", "declined"].includes(status)) return;
+    async function updateBooking(id, status, adminNotes, buttons) {
+      if (!["approved", "declined"].includes(status)) {
+        return;
+      }
+
+      if (processingBookings.has(id)) {
+        return;
+      }
 
       if (!confirm("Are you sure you want to " + status + " this booking?")) {
         return;
       }
 
-      say("Saving decision…");
+      processingBookings.add(id);
 
-      const { data, error } = await client
-        .from("hello_honey_bookings")
-        .update({
-          status,
-          admin_notes: adminNotes.trim() || null,
-          updated_at: new Date().toISOString()
-        })
-        .eq("id", id)
-        .eq("status", "pending")
-        .select("id");
+      buttons.forEach((button) => {
+        button.disabled = true;
+      });
 
-      if (error) {
-        say("Couldn't update booking: " + error.message);
-        return;
+      let decisionSaved = false;
+
+      try {
+        say("Saving decision…");
+
+        const { data, error } = await client
+          .from("hello_honey_bookings")
+          .update({
+            status: status,
+            admin_notes: adminNotes.trim() || null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", id)
+          .eq("status", "pending")
+          .select("id");
+
+        if (error) {
+          say("Couldn't save the decision: " + error.message);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          say(
+            "No booking was changed. It may already have been updated " +
+            "or your account may not have permission."
+          );
+
+          await loadBookings();
+          return;
+        }
+
+        decisionSaved = true;
+        say("Decision saved. Sending customer email…");
+
+        let emailSent = false;
+        let emailProblem = "";
+
+        try {
+          const { data: emailData, error: emailError } =
+            await client.functions.invoke(
+              "hello-honey-decision-email",
+              {
+                body: {
+                  bookingId: id,
+                  decision: status
+                }
+              }
+            );
+
+          if (emailError) {
+            emailProblem =
+              emailError.message || "The email function returned an error.";
+          } else if (emailData && emailData.success === true) {
+            emailSent = true;
+          } else {
+            emailProblem =
+              emailData && emailData.error
+                ? String(emailData.error)
+                : "The function did not confirm email success.";
+          }
+        } catch (error) {
+          emailProblem = error instanceof Error
+            ? error.message
+            : "An unexpected email error occurred.";
+        }
+
+        // Refresh the list without replacing the final result message.
+        let bookingsRefreshed = false;
+
+        try {
+          bookingsRefreshed = await loadBookings({ silent: true });
+        } catch (_) {
+          bookingsRefreshed = false;
+        }
+
+        if (emailSent) {
+          say(
+            "Booking " + status + " successfully. " +
+            "Resend accepted the customer email." +
+            (bookingsRefreshed
+              ? ""
+              : " The booking list could not be refreshed; use Refresh bookings.")
+          );
+        } else {
+          say(
+            "The booking decision was saved as " + status +
+            ", but the customer email could not be confirmed. " +
+            "Check the hello-honey-decision-email logs in Supabase." +
+            (emailProblem ? " Details: " + emailProblem : "") +
+            (bookingsRefreshed
+              ? ""
+              : " The booking list could not be refreshed; use Refresh bookings.")
+          );
+        }
+      } catch (error) {
+        say(
+          decisionSaved
+            ? "The booking decision was saved, but a later step failed. " +
+              "Check the booking status and email function logs before retrying."
+            : "An unexpected error occurred: " +
+              (error instanceof Error ? error.message : String(error))
+        );
+      } finally {
+        processingBookings.delete(id);
+
+        buttons.forEach((button) => {
+          button.disabled = false;
+        });
       }
-
-      if (!data || data.length === 0) {
-        say("No booking changed. It may already have been updated or access was denied.");
-        return;
-      }
-
-      say("Decision saved. Customer email notifications are not configured yet.");
-      await loadBookings();
     }
 
     async function checkSession() {
@@ -226,8 +447,17 @@
         return;
       }
 
-      if (user.id !== OWNER_ID || user.email !== OWNER_EMAIL) {
+      if (
+        user.id !== OWNER_ID ||
+        (user.email || "").toLowerCase() !== OWNER_EMAIL.toLowerCase()
+      ) {
         await client.auth.signOut();
+
+        loginForm.hidden = false;
+        dashboard.hidden = true;
+        logoutBtn.hidden = true;
+        refreshBtn.hidden = true;
+
         say("Access denied. This dashboard is reserved for Artemida.");
         return;
       }
@@ -236,6 +466,7 @@
       dashboard.hidden = false;
       logoutBtn.hidden = false;
       refreshBtn.hidden = false;
+
       await loadBookings();
     }
 
@@ -257,12 +488,20 @@
     });
 
     logoutBtn.addEventListener("click", async () => {
-      await client.auth.signOut();
+      const { error } = await client.auth.signOut();
+
+      if (error) {
+        say("Sign-out failed: " + error.message);
+        return;
+      }
+
       say("You've signed out.");
       await checkSession();
     });
 
-    refreshBtn.addEventListener("click", loadBookings);
+    refreshBtn.addEventListener("click", () => {
+      loadBookings();
+    });
 
     checkSession();
   })();
