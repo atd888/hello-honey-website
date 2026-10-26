@@ -1,4 +1,3 @@
-
 <!doctype html>
 <html lang="en">
 <head>
@@ -80,6 +79,7 @@
     }
   </style>
 </head>
+
 <body>
   <div class="announcement">
     Hello Honey · Private booking management
@@ -92,7 +92,12 @@
       <h1>Booking dashboard</h1>
       <p>Sign in to review appointment requests and manage decisions.</p>
 
-      <p id="message" class="message" role="status" aria-live="polite"></p>
+      <p
+        id="message"
+        class="message"
+        role="status"
+        aria-live="polite"
+      ></p>
 
       <form id="login-form">
         <label for="email">Email address</label>
@@ -112,24 +117,46 @@
           required
         >
 
-        <button class="approve" type="submit">Sign in</button>
+        <button class="approve" type="submit">
+          Sign in
+        </button>
       </form>
 
-      <button id="logout" class="secondary" type="button" hidden>
+      <button
+        id="forgot-password"
+        class="secondary"
+        type="button"
+      >
+        Forgot password?
+      </button>
+
+      <button
+        id="logout"
+        class="secondary"
+        type="button"
+        hidden
+      >
         Sign out
       </button>
 
-      <button id="refresh" class="secondary" type="button" hidden>
+      <button
+        id="refresh"
+        class="secondary"
+        type="button"
+        hidden
+      >
         Refresh bookings
       </button>
     </section>
 
     <section id="dashboard" class="admin-card" hidden>
       <h2>Appointment requests</h2>
+
       <p>
         Review each request. Approving or declining saves your decision
         and then attempts to email the customer.
       </p>
+
       <div id="bookings"></div>
     </section>
   </main>
@@ -149,12 +176,18 @@
     const OWNER_ID = "3a7b2b25-39f7-462a-ace9-e98bd57efe2f";
     const OWNER_EMAIL = "artemidaballiu35@gmail.com";
 
+    const RESET_PASSWORD_URL =
+      "https://atd888.github.io/hello-honey-website/reset-password.html";
+
     const message = document.getElementById("message");
     const loginForm = document.getElementById("login-form");
     const dashboard = document.getElementById("dashboard");
     const bookingsEl = document.getElementById("bookings");
     const logoutBtn = document.getElementById("logout");
     const refreshBtn = document.getElementById("refresh");
+    const forgotPasswordBtn =
+      document.getElementById("forgot-password");
+    const emailInput = document.getElementById("email");
 
     const processingBookings = new Set();
 
@@ -369,7 +402,8 @@
 
           if (emailError) {
             emailProblem =
-              emailError.message || "The email function returned an error.";
+              emailError.message ||
+              "The email function returned an error.";
           } else if (emailData && emailData.success === true) {
             emailSent = true;
           } else {
@@ -444,6 +478,7 @@
         dashboard.hidden = true;
         logoutBtn.hidden = true;
         refreshBtn.hidden = true;
+        forgotPasswordBtn.hidden = false;
         return;
       }
 
@@ -457,6 +492,7 @@
         dashboard.hidden = true;
         logoutBtn.hidden = true;
         refreshBtn.hidden = true;
+        forgotPasswordBtn.hidden = false;
 
         say("Access denied. This dashboard is reserved for Artemida.");
         return;
@@ -466,16 +502,56 @@
       dashboard.hidden = false;
       logoutBtn.hidden = false;
       refreshBtn.hidden = false;
+      forgotPasswordBtn.hidden = true;
 
       await loadBookings();
     }
+
+    // Password recovery: explicitly send the user to reset-password.html.
+    forgotPasswordBtn.addEventListener("click", async () => {
+      const email = emailInput.value.trim();
+
+      if (!email) {
+        say("Enter your account email address first.");
+        emailInput.focus();
+        return;
+      }
+
+      forgotPasswordBtn.disabled = true;
+      say("Requesting a password-reset email…");
+
+      try {
+        const { error } = await client.auth.resetPasswordForEmail(email, {
+          redirectTo: RESET_PASSWORD_URL
+        });
+
+        if (error) {
+          say("Couldn't request a reset email: " + error.message);
+          return;
+        }
+
+        say(
+          "If an account exists for that email, Supabase will send a " +
+          "password-reset message. Check your inbox and spam folder. " +
+          "If you recently requested emails, wait for the rate limit " +
+          "to clear before trying again."
+        );
+      } catch (error) {
+        say(
+          "Couldn't request a reset email: " +
+          (error instanceof Error ? error.message : String(error))
+        );
+      } finally {
+        forgotPasswordBtn.disabled = false;
+      }
+    });
 
     loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       say("Signing in…");
 
       const { error } = await client.auth.signInWithPassword({
-        email: document.getElementById("email").value.trim(),
+        email: emailInput.value.trim(),
         password: document.getElementById("password").value
       });
 
