@@ -265,8 +265,7 @@
           card.appendChild(p);
         });
 
-       
-        // Owner-only delete button for any booking.
+        // Delete button for any booking.
         const deleteBooking = document.createElement("button");
         deleteBooking.type = "button";
         deleteBooking.className = "delete-test";
@@ -333,8 +332,6 @@
       return true;
     }
 
-   
-    async function 
     async function deleteAnyBooking(id, customerName, button) {
       const confirmed = confirm(
         'Permanently delete the booking for "' +
@@ -376,60 +373,6 @@
       } catch (error) {
         say(
           "Couldn't delete booking: " +
-          (error instanceof Error ? error.message : String(error))
-        );
-      } finally {
-        button.disabled = false;
-      }
-    }
-id, customerName, button) {
-      // Existing deletion code...
-      // More existing deletion code...
-    } // <-- include this closing brace
-
-    async function updateBooking(id, status, adminNotes, buttons) {
-
-      const confirmed = confirm(
-        'Permanently delete the test booking "' + customerName +
-        '"? This cannot be undone.'
-      );
-
-      if (!confirmed) return;
-
-      button.disabled = true;
-      say("Deleting test booking…");
-
-      try {
-        const { data, error } = await client
-          .from("hello_honey_bookings")
-          .delete()
-          .eq("id", id)
-          .select("id");
-
-        if (error) {
-          say("Couldn't delete the test booking: " + error.message);
-          return;
-        }
-
-        if (!data || data.length === 0) {
-          say(
-            "No booking was deleted. Check that you are signed in as the owner " +
-            "and that the booking name starts with TEST BOOKING."
-          );
-          return;
-        }
-
-        const refreshed = await loadBookings({ silent: true });
-
-        say(
-          "Test booking deleted successfully." +
-          (refreshed
-            ? ""
-            : " The list could not refresh; use Refresh bookings.")
-        );
-      } catch (error) {
-        say(
-          "Couldn't delete the test booking: " +
           (error instanceof Error ? error.message : String(error))
         );
       } finally {
