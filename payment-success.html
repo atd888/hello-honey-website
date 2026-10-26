@@ -1,0 +1,163 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#f7f1e5">
+  <title>Payment Confirmation | Hello Honey</title>
+  <style>
+    :root {
+      --cream: #f8f4eb;
+      --ivory: #fffdf8;
+      --gold: #c6a45a;
+      --brown: #51452f;
+      --muted: #756d5e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--cream);
+      color: var(--brown);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    header {
+      padding: 22px 16px;
+      text-align: center;
+      background: var(--ivory);
+      border-bottom: 1px solid #e8dfcc;
+    }
+
+    .brand {
+      margin: 0;
+      color: var(--brown);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      letter-spacing: 1px;
+    }
+
+    .tagline {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    main {
+      width: min(100% - 32px, 560px);
+      margin: auto;
+      padding: 42px 0;
+    }
+
+    .card {
+      padding: 34px 26px;
+      border: 1px solid #e8dfcc;
+      border-radius: 18px;
+      background: var(--ivory);
+      box-shadow: 0 8px 30px rgba(81, 69, 47, 0.06);
+      text-align: center;
+    }
+
+    .symbol {
+      width: 66px;
+      height: 66px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 20px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: 31px;
+    }
+
+    h1 {
+      margin: 0 0 14px;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 28px;
+      font-weight: normal;
+    }
+
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .status {
+      margin: 22px 0;
+      padding: 14px;
+      border-radius: 10px;
+      background: #f5eedb;
+      color: var(--brown);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 13px 22px;
+      border-radius: 7px;
+      background: var(--gold);
+      color: #fff;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+
+    footer {
+      padding: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">Hello Honey</p>
+    <p class="tagline">Good nails. Sweet moments. Your place.</p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="page-title">
+      <div class="symbol" aria-hidden="true">♥</div>
+
+      <h1 id="page-title">Thank you!</h1>
+
+      <p>
+        Thank you for completing the checkout process.
+        We are checking the status of your deposit payment.
+      </p>
+
+      <div class="status" id="payment-status" role="status" aria-live="polite">
+        Your payment is awaiting secure confirmation. Please allow a
+        moment for our system to update your booking.
+      </div>
+
+      <p>
+        Your appointment is not confirmed by this page alone.
+        We will confirm your booking once the deposit has been verified.
+      </p>
+
+      <a class="button" href="https://hello-honey.co.uk/">
+        Return to Hello Honey
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Hello Honey. All rights reserved.
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent =
+      new Date().getFullYear();
+  </script>
+</body>
+</html>
