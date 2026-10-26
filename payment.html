@@ -1,116 +1,237 @@
 
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-const ALLOWED_ORIGIN = "https://hello-honey.co.uk";
-
-const corsHeaders = {
-  "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
-  "Access-Control-Allow-Headers": "authorization, apikey, content-type",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
-  "Vary": "Origin",
-};
-
-function reply(data: unknown, status = 200): Response {
-  return new Response(JSON.stringify(data), {
-    status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
-  });
-}
-
-async function sha256(value: string): Promise<string> {
-  const digest = await crypto.subtle.digest(
-    "SHA-256",
-    new TextEncoder().encode(value),
-  );
-
-  return Array.from(new Uint8Array(digest))
-    .map((byte) => byte.toString(16).padStart(2, "0"))
-    .join("");
-}
-
-function getServiceKey(): string | undefined {
-  const direct = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
-  if (direct) return direct;
-
-  const raw = Deno.env.get("SUPABASE_SECRET_KEYS");
-  if (!raw) return undefined;
-
-  try {
-    const parsed: Record<string, string> = JSON.parse(raw);
-    return parsed["service_role"] ?? parsed["sb_secret"];
-  } catch {
-    return undefined;
-  }
-}
-
-Deno.serve(async (req: Request): Promise<Response> => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { status: 204, headers: corsHeaders });
-  }
-
-  if (req.headers.get("origin") !== ALLOWED_ORIGIN) {
-    return reply({ error: "Request not allowed." }, 403);
-  }
-
-  if (req.method !== "POST") {
-    return reply({ error: "Method not allowed." }, 405);
-  }
-
-  try {
-    const supabaseUrl = Deno.env.get("SUPABASE_URL");
-    const serviceKey = getServiceKey();
-
-    if (!supabaseUrl || !serviceKey) {
-      console.error("Payment status configuration is missing.");
-      return reply({ error: "Payment status service is not configured." }, 500);
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fffaf5">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Secure Hello Honey appointment deposit payment.">
+  <title>Pay Your Deposit | Hello Honey</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .payment-wrap {
+      max-width: 680px;
+      margin: 42px auto;
+      padding: 20px;
     }
-
-    const body = await req.json();
-    const token = typeof body?.token === "string" ? body.token : "";
-
-    if (!/^[A-Za-z0-9_-]{40,200}$/.test(token)) {
-      return reply({ error: "Invalid payment link." }, 400);
+    .payment-card {
+      background: #fffaf0;
+      border: 1px solid #e6d5a8;
+      border-radius: 16px;
+      padding: 24px;
+      overflow-wrap: anywhere;
     }
-
-    const tokenHash = await sha256(token);
-
-    const supabase = createClient(supabaseUrl, serviceKey, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
-
-    const { data: booking, error } = await supabase
-      .from("hello_honey_bookings")
-      .select("status, payment_status")
-      .eq("payment_token_hash", tokenHash)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Payment status lookup failed:", error.message);
-      return reply({ error: "Unable to check payment status." }, 500);
+    .payment-note {
+      background: #f5edda;
+      border-radius: 9px;
+      padding: 16px;
+      margin-top: 20px;
     }
-
-    if (!booking) {
-      return reply({ error: "Invalid or expired payment link." }, 404);
+    .payment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
     }
-
-    if (String(booking.status).toLowerCase() !== "approved") {
-      return reply({ error: "This booking is not approved for payment." }, 403);
+    .payment-actions button {
+      cursor: pointer;
+      width: 100%;
     }
+    #payment-status {
+      min-height: 1.5em;
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+    #pay-button:disabled {
+      cursor: wait;
+      opacity: .6;
+    }
+    @media (max-width: 480px) {
+      .payment-wrap {
+        margin: 20px auto;
+        padding: 14px;
+      }
+      .payment-card {
+        padding: 17px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement">
+    A little self-care, delivered to your door. North London, this one's for you.
+  </div>
 
-    return reply({
-      valid: true,
-      paid: booking.payment_status === "paid",
-      paymentStatus: booking.payment_status ?? "unpaid",
-    });
-  } catch (error) {
-    console.error(
-      "Payment status check failed:",
-      error instanceof Error ? error.message : "Unknown error",
-    );
+  <header>
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <strong>hello honey</strong>
+        <span>mobile nail studio</span>
+      </a>
+      <button class="menu-toggle" type="button"
+        aria-label="Open navigation" aria-expanded="false">☰</button>
+      <div class="navlinks">
+        <a href="index.html">Home</a>
+        <a href="services.html">Our services</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="book.html">Book your moment ↗</a>
+      </div>
+    </nav>
+  </header>
 
-    return reply({ error: "Unable to check payment status." }, 500);
-  }
-});
+  <main class="payment-wrap">
+    <div class="eyebrow">Hello Honey · Booking payment</div>
+    <h1>Let's take care of your <em>deposit.</em></h1>
+    <p>
+      Your appointment request has been approved. You can pay your 40% deposit
+      securely using Stripe below.
+    </p>
+
+    <section class="payment-card">
+      <h2>Secure deposit payment</h2>
+      <p>Use the personal payment link from your Hello Honey approval email.</p>
+
+      <div class="payment-note">
+        <strong>Before you pay</strong>
+        <p>
+          Stripe Checkout will show the deposit amount before you confirm
+          payment. Your appointment is not confirmed until the deposit is
+          paid and Artemida confirms your appointment.
+        </p>
+      </div>
+
+      <div class="payment-actions">
+        <button class="btn" id="pay-button" type="button">
+          Continue to secure card payment
+        </button>
+      </div>
+      <p id="payment-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="payment-note">
+      <h3>What happens next?</h3>
+      <ol>
+        <li>Click the secure payment button above.</li>
+        <li>Check the deposit amount on Stripe Checkout.</li>
+        <li>Complete payment using the payment methods offered by Stripe.</li>
+        <li>Return to Hello Honey after completing payment.</li>
+      </ol>
+      <p>
+        <strong>Need help?</strong> Contact Hello Honey if your payment link
+        doesn't work. Never send card details by email or message.
+      </p>
+    </section>
+
+    <p style="margin-top:24px">
+      <a href="book.html">← Return to the booking page</a>
+    </p>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">hello honey</div>
+        <p>
+          A little care. A lot of honey.<br>
+          Beautiful nails. Your place. Your pace.
+        </p>
+        <p>At home in North London</p>
+      </div>
+      <div>
+        <h4>Find your moment</h4>
+        <div class="footer-links">
+          <a href="services.html">Our services</a>
+          <a href="how-it-works.html">How it works</a>
+          <a href="book.html">Book your moment</a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <span>© 2026 Hello Honey</span>
+      <span>Good nails. Sweet moments. Your place.</span>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+  <script>
+    (() => {
+      const button = document.getElementById("pay-button");
+      const status = document.getElementById("payment-status");
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
+
+      const checkoutEndpoint =
+        "https://vynemlcijhhlyuydtrhp.supabase.co/functions/v1/hello-honey-checkout";
+
+      if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
+        button.disabled = true;
+        status.textContent =
+          "Your personal payment link is missing or invalid. Please open the link in your Hello Honey approval email.";
+        return;
+      }
+
+      if (params.get("cancelled") === "1") {
+        status.textContent =
+          "Your checkout was cancelled. You can try again using the button above.";
+      }
+
+      button.addEventListener("click", async () => {
+        if (button.disabled) return;
+
+        button.disabled = true;
+        button.textContent = "Connecting securely…";
+        status.textContent = "Preparing your Stripe Checkout session.";
+
+        try {
+          const response = await fetch(checkoutEndpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token })
+          });
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok) {
+            const message = typeof result.error === "string"
+              ? result.error
+              : "We couldn't start the payment. Please try again.";
+
+            if (response.status === 409) {
+              status.textContent =
+                message.toLowerCase().includes("already been paid")
+                  ? "This deposit has already been paid. Please contact Hello Honey if you need confirmation. Do not attempt another payment."
+                  : message;
+              button.hidden = true;
+              return;
+            }
+
+            throw new Error(message);
+          }
+
+          const checkoutUrl = result.checkoutUrl;
+
+          if (
+            typeof checkoutUrl !== "string" ||
+            !checkoutUrl.startsWith("https://checkout.stripe.com/")
+          ) {
+            throw new Error(
+              "Stripe did not return a valid checkout address. Please contact Hello Honey."
+            );
+          }
+
+          status.textContent = "Opening secure Stripe Checkout…";
+          window.location.assign(checkoutUrl);
+        } catch (error) {
+          status.textContent = error instanceof Error
+            ? error.message
+            : "Unable to start payment. Please try again.";
+
+          button.disabled = false;
+          button.textContent = "Try secure card payment again";
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
