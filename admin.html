@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html lang="en">
 <head>
@@ -58,6 +59,12 @@
       color: white;
     }
 
+    .delete-test {
+      background: #f8e1df;
+      color: #7a2420;
+      border: 1px solid #d8aaa5 !important;
+    }
+
     .secondary {
       background: #f2e8dc;
       color: #382c20;
@@ -92,12 +99,7 @@
       <h1>Booking dashboard</h1>
       <p>Sign in to review appointment requests and manage decisions.</p>
 
-      <p
-        id="message"
-        class="message"
-        role="status"
-        aria-live="polite"
-      ></p>
+      <p id="message" class="message" role="status" aria-live="polite"></p>
 
       <form id="login-form">
         <label for="email">Email address</label>
@@ -117,46 +119,28 @@
           required
         >
 
-        <button class="approve" type="submit">
-          Sign in
-        </button>
+        <button class="approve" type="submit">Sign in</button>
       </form>
 
-      <button
-        id="forgot-password"
-        class="secondary"
-        type="button"
-      >
+      <button id="forgot-password" class="secondary" type="button">
         Forgot password?
       </button>
 
-      <button
-        id="logout"
-        class="secondary"
-        type="button"
-        hidden
-      >
+      <button id="logout" class="secondary" type="button" hidden>
         Sign out
       </button>
 
-      <button
-        id="refresh"
-        class="secondary"
-        type="button"
-        hidden
-      >
+      <button id="refresh" class="secondary" type="button" hidden>
         Refresh bookings
       </button>
     </section>
 
     <section id="dashboard" class="admin-card" hidden>
       <h2>Appointment requests</h2>
-
       <p>
         Review each request. Approving or declining saves your decision
         and then attempts to email the customer.
       </p>
-
       <div id="bookings"></div>
     </section>
   </main>
@@ -281,6 +265,28 @@
           card.appendChild(p);
         });
 
+        // Delete button appears only for bookings labelled TEST BOOKING.
+        // The database policy also checks the owner ID and booking name.
+        if (
+          typeof booking.customer_name === "string" &&
+          booking.customer_name.trim().toUpperCase().startsWith("TEST BOOKING")
+        ) {
+          const deleteTest = document.createElement("button");
+          deleteTest.type = "button";
+          deleteTest.className = "delete-test";
+          deleteTest.textContent = "Delete test booking";
+
+          deleteTest.addEventListener("click", () => {
+            deleteTestBooking(
+              booking.id,
+              booking.customer_name,
+              deleteTest
+            );
+          });
+
+          card.appendChild(deleteTest);
+        }
+
         if (booking.status === "pending") {
           const label = document.createElement("label");
           label.textContent = "Private admin note (optional)";
@@ -330,6 +336,63 @@
       }
 
       return true;
+    }
+
+    async function deleteTestBooking(id, customerName, button) {
+      if (
+        typeof customerName !== "string" ||
+        !customerName.trim().toUpperCase().startsWith("TEST BOOKING")
+      ) {
+        say("Deletion is only available for clearly labelled test bookings.");
+        return;
+      }
+
+      const confirmed = confirm(
+        'Permanently delete the test booking "' + customerName +
+        '"? This cannot be undone.'
+      );
+
+      if (!confirmed) return;
+
+      button.disabled = true;
+      say("Deleting test booking…");
+
+      try {
+        const { data, error } = await client
+          .from("hello_honey_bookings")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+        if (error) {
+          say("Couldn't delete the test booking: " + error.message);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          say(
+            "No booking was deleted. Check that you are signed in as the owner " +
+            "and that the booking name starts with TEST BOOKING."
+          );
+          return;
+        }
+
+        const refreshed = await loadBookings({ silent: true });
+
+        say(
+          "Test booking deleted successfully." +
+          (refreshed
+            ? ""
+            : " The list could not refresh; use Refresh bookings.")
+        );
+      } catch (error) {
+        say(
+          "Couldn't delete the test booking: " +
+          (error instanceof Error ? error.message : String(error))
+        );
+      } finally {
+        button.disabled = false;
+      }
     }
 
     async function updateBooking(id, status, adminNotes, buttons) {
@@ -418,7 +481,6 @@
             : "An unexpected email error occurred.";
         }
 
-        // Refresh the list without replacing the final result message.
         let bookingsRefreshed = false;
 
         try {
@@ -507,7 +569,6 @@
       await loadBookings();
     }
 
-    // Password recovery: explicitly send the user to reset-password.html.
     forgotPasswordBtn.addEventListener("click", async () => {
       const email = emailInput.value.trim();
 
