@@ -265,27 +265,22 @@
           card.appendChild(p);
         });
 
-        // Delete button appears only for bookings labelled TEST BOOKING.
-        // The database policy also checks the owner ID and booking name.
-        if (
-          typeof booking.customer_name === "string" &&
-          booking.customer_name.trim().toUpperCase().startsWith("TEST BOOKING")
-        ) {
-          const deleteTest = document.createElement("button");
-          deleteTest.type = "button";
-          deleteTest.className = "delete-test";
-          deleteTest.textContent = "Delete test booking";
+       
+        // Owner-only delete button for any booking.
+        const deleteBooking = document.createElement("button");
+        deleteBooking.type = "button";
+        deleteBooking.className = "delete-test";
+        deleteBooking.textContent = "Delete booking";
 
-          deleteTest.addEventListener("click", () => {
-            deleteTestBooking(
-              booking.id,
-              booking.customer_name,
-              deleteTest
-            );
-          });
+        deleteBooking.addEventListener("click", () => {
+          deleteAnyBooking(
+            booking.id,
+            booking.customer_name,
+            deleteBooking
+          );
+        });
 
-          card.appendChild(deleteTest);
-        }
+        card.appendChild(deleteBooking);
 
         if (booking.status === "pending") {
           const label = document.createElement("label");
@@ -338,14 +333,61 @@
       return true;
     }
 
-    async function deleteTestBooking(id, customerName, button) {
-      if (
-        typeof customerName !== "string" ||
-        !customerName.trim().toUpperCase().startsWith("TEST BOOKING")
-      ) {
-        say("Deletion is only available for clearly labelled test bookings.");
-        return;
+   
+    async function 
+    async function deleteAnyBooking(id, customerName, button) {
+      const confirmed = confirm(
+        'Permanently delete the booking for "' +
+        String(customerName || "Unknown customer") +
+        '"? This cannot be undone.'
+      );
+
+      if (!confirmed) return;
+
+      button.disabled = true;
+      say("Deleting booking…");
+
+      try {
+        const { data, error } = await client
+          .from("hello_honey_bookings")
+          .delete()
+          .eq("id", id)
+          .select("id");
+
+        if (error) {
+          say("Couldn't delete booking: " + error.message);
+          return;
+        }
+
+        if (!data || data.length === 0) {
+          say(
+            "No booking was deleted. Check your owner login, " +
+            "database permissions and delete policy."
+          );
+          return;
+        }
+
+        const refreshed = await loadBookings({ silent: true });
+
+        say(
+          "Booking deleted successfully." +
+          (refreshed ? "" : " Please refresh the bookings list.")
+        );
+      } catch (error) {
+        say(
+          "Couldn't delete booking: " +
+          (error instanceof Error ? error.message : String(error))
+        );
+      } finally {
+        button.disabled = false;
       }
+    }
+id, customerName, button) {
+      // Existing deletion code...
+      // More existing deletion code...
+    } // <-- include this closing brace
+
+    async function updateBooking(id, status, adminNotes, buttons) {
 
       const confirmed = confirm(
         'Permanently delete the test booking "' + customerName +
