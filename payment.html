@@ -54,6 +54,14 @@
       opacity: .6;
     }
 
+    .payment-success {
+      border: 1px solid #8b9a68;
+      background: #f0f4e9;
+      padding: 16px;
+      border-radius: 10px;
+      margin-top: 18px;
+    }
+
     @media (max-width: 480px) {
       .payment-wrap {
         margin: 20px auto;
@@ -97,16 +105,25 @@
     <h1>Let's take care of your <em>deposit.</em></h1>
 
     <p>
-      Your appointment request has been approved. You can pay your 40% deposit
-      securely using Stripe below.
+      Your appointment request has been approved. Use your personal payment
+      link to continue to secure Stripe Checkout.
     </p>
 
     <section class="payment-card">
-      <h2>Secure deposit payment</h2>
+      <h2 id="payment-heading">Secure deposit payment</h2>
 
-      <p>
-        Use the personal payment link from your Hello Honey approval email.
+      <p id="payment-intro">
+        Your deposit status must be checked by our payment service before
+        payment can be confirmed.
       </p>
+
+      <div id="paid-notice" class="payment-success" hidden>
+        <strong>Deposit already paid</strong>
+        <p>
+          If you have completed payment, please do not try to pay again.
+          Contact Hello Honey if you need confirmation of your appointment.
+        </p>
+      </div>
 
       <div class="payment-note">
         <strong>Before you pay</strong>
@@ -128,10 +145,9 @@
 
     <section class="payment-note">
       <h3>What happens next?</h3>
-
       <ol>
-        <li>Click the secure payment button above.</li>
-        <li>Check the deposit amount on Stripe Checkout.</li>
+        <li>Open secure Stripe Checkout.</li>
+        <li>Check the deposit amount shown by Stripe.</li>
         <li>Complete payment using the payment methods offered by Stripe.</li>
         <li>Return to Hello Honey after completing payment.</li>
       </ol>
@@ -180,6 +196,9 @@
     (() => {
       const button = document.getElementById("pay-button");
       const status = document.getElementById("payment-status");
+      const heading = document.getElementById("payment-heading");
+      const intro = document.getElementById("payment-intro");
+      const paidNotice = document.getElementById("paid-notice");
 
       const params = new URLSearchParams(window.location.search);
       const token = params.get("token");
@@ -187,16 +206,35 @@
       const checkoutEndpoint =
         "https://vynemlcijhhlyuydtrhp.supabase.co/functions/v1/hello-honey-checkout";
 
+      const validToken =
+        typeof token === "string" && /^[a-f0-9]{64}$/i.test(token);
+
+      function showInvalidLink(message) {
+        button.disabled = true;
+        button.hidden = true;
+        heading.textContent = "Payment link unavailable";
+        intro.textContent = message;
+        status.textContent = "";
+      }
+
+      if (!validToken) {
+        showInvalidLink(
+          "Please open the personal payment link from your Hello Honey approval email. If the link is missing or invalid, contact Hello Honey."
+        );
+        return;
+      }
+
+      if (params.get("cancelled") === "1") {
+        status.textContent =
+          "Checkout was cancelled. No payment confirmation has been received. You can try again if you have not paid.";
+      }
+
       button.addEventListener("click", async () => {
-        if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
-          status.textContent =
-            "Your payment link is missing or invalid. Please open the secure payment link in your approval email or contact Hello Honey.";
-          return;
-        }
+        if (button.disabled) return;
 
         button.disabled = true;
         button.textContent = "Connecting securely…";
-        status.textContent = "Preparing your Stripe Checkout session.";
+        status.textContent = "Contacting the secure payment service.";
 
         try {
           const response = await fetch(checkoutEndpoint, {
@@ -208,15 +246,33 @@
           });
 
           const result = await response.json().catch(() => ({}));
+          const errorMessage =
+            typeof result.error === "string" ? result.error : "";
 
           if (!response.ok) {
+            const lowerError = errorMessage.toLowerCase();
+
+            if (
+              lowerError.includes("already paid") ||
+              lowerError.includes("payment_status") ||
+              lowerError.includes("deposit has been paid")
+            ) {
+              heading.textContent = "Deposit status";
+              intro.textContent =
+                "The payment service indicates this deposit may already have been paid.";
+              paidNotice.hidden = false;
+              button.hidden = true;
+              status.textContent =
+                "Please do not attempt another payment. Contact Hello Honey to confirm your booking.";
+              return;
+            }
+
             throw new Error(
-              result.error ||
-              "We couldn't start the payment. Please try again."
+              errorMessage ||
+              "We couldn't start checkout. Please contact Hello Honey before trying again."
             );
           }
 
-          // hello-honey-checkout returns checkoutUrl, not url.
           const checkoutUrl = result.checkoutUrl;
 
           if (
@@ -224,7 +280,7 @@
             !checkoutUrl.startsWith("https://checkout.stripe.com/")
           ) {
             throw new Error(
-              "Stripe did not return a valid checkout address. Please contact Hello Honey."
+              "The payment service did not return a valid Stripe Checkout link. Please contact Hello Honey."
             );
           }
 
@@ -234,25 +290,12 @@
           status.textContent =
             error instanceof Error
               ? error.message
-              : "Unable to start payment. Please try again.";
+              : "Unable to contact the payment service. Please try again later.";
 
           button.disabled = false;
-          button.textContent = "View payment status";
+          button.textContent = "Try secure payment again";
         }
       });
-
-      if (!token) {
-        status.textContent =
-          "Open this page using the secure payment link in your Hello Honey approval email.";
-      } else if (!/^[a-f0-9]{64}$/i.test(token)) {
-        status.textContent =
-          "This payment link is invalid. Please contact Hello Honey for a new link.";
-      }
-
-      if (params.get("cancelled") === "1") {
-        status.textContent =
-          "Your checkout was cancelled. You can try again using the button above.";
-      }
     })();
   </script>
 </body>
