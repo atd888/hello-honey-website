@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="theme-color" content="#fffaf5">
   <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="Hello Honey bank transfer deposit instructions.">
+  <meta name="description" content="Secure Hello Honey appointment deposit payment.">
   <title>Pay Your Deposit | Hello Honey</title>
   <link rel="stylesheet" href="assets/style.css">
   <style>
@@ -22,34 +22,6 @@
       padding: 24px;
       overflow-wrap: anywhere;
     }
-    .payment-amount {
-      font-size: 2rem;
-      font-weight: 700;
-      color: #77734b;
-    }
-    .payment-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      gap: 12px;
-      padding: 13px 0;
-      border-bottom: 1px solid #e6d5a8;
-    }
-    .payment-row strong {
-      text-align: right;
-      overflow-wrap: anywhere;
-    }
-    .copy-button {
-      flex-shrink: 0;
-      border: 1px solid #77734b;
-      border-radius: 7px;
-      background: #fff;
-      color: #423b2b;
-      padding: 7px 10px;
-      cursor: pointer;
-      font: inherit;
-      font-size: .9rem;
-    }
     .payment-note {
       background: #f5edda;
       border-radius: 9px;
@@ -64,10 +36,15 @@
     }
     .payment-actions button {
       cursor: pointer;
+      width: 100%;
     }
-    #copy-status {
+    #payment-status {
       min-height: 1.5em;
-      margin-bottom: 0;
+      margin-top: 14px;
+    }
+    #pay-button:disabled {
+      cursor: wait;
+      opacity: .6;
     }
     @media (max-width: 480px) {
       .payment-wrap {
@@ -76,12 +53,6 @@
       }
       .payment-card {
         padding: 17px;
-      }
-      .payment-row {
-        flex-wrap: wrap;
-      }
-      .payment-row strong {
-        text-align: left;
       }
     }
   </style>
@@ -112,77 +83,46 @@
     <div class="eyebrow">Hello Honey · Booking payment</div>
     <h1>Let's take care of your <em>deposit.</em></h1>
     <p>
-      Your appointment request has been approved. Follow the instructions
-      below to pay your deposit by bank transfer.
+      Your appointment request has been approved. You can pay your 40% deposit
+      securely by card using Stripe below.
     </p>
 
     <section class="payment-card">
-      <h2>Deposit details</h2>
-      <p>Your deposit amount is shown in your Hello Honey approval email.</p>
+      <h2>Secure deposit payment</h2>
+      <p>
+        Check that you opened this page using the payment link in your
+        Hello Honey approval email.
+      </p>
 
       <div class="payment-note">
-        <strong>Before you transfer</strong>
+        <strong>Before you pay</strong>
         <p>
-          Open your approval email and check the exact deposit amount and
-          payment reference. Enter both exactly as shown in that email.
+          Stripe will show the exact deposit amount before you confirm payment.
+          Your appointment is not confirmed until the deposit is paid and
+          Artemida confirms your appointment.
         </p>
       </div>
 
-      <h3 style="margin-top:24px">Bank account</h3>
-
-      <div class="payment-row">
-        <span>Account name</span>
-        <strong>Artemida Balliu</strong>
-        <button class="copy-button" type="button"
-          data-copy="Artemida Balliu">Copy</button>
-      </div>
-
-      <div class="payment-row">
-        <span>Sort code</span>
-        <strong>20-25-96</strong>
-        <button class="copy-button" type="button"
-          data-copy="20-25-96">Copy</button>
-      </div>
-
-      <div class="payment-row">
-        <span>Account number</span>
-        <strong>33246507</strong>
-        <button class="copy-button" type="button"
-          data-copy="33246507">Copy</button>
-      </div>
-
-      <div class="payment-row">
-        <span>Deposit amount</span>
-        <strong>Use the amount in your approval email</strong>
-      </div>
-
-      <div class="payment-row">
-        <span>Payment reference</span>
-        <strong>Use the reference in your approval email</strong>
-      </div>
-
       <div class="payment-actions">
-        <button class="btn" id="copy-all" type="button">
-          Copy bank account details
+        <button class="btn" id="pay-button" type="button">
+          Continue to secure card payment
         </button>
       </div>
-      <p id="copy-status" role="status" aria-live="polite"></p>
+
+      <p id="payment-status" role="status" aria-live="polite"></p>
     </section>
 
     <section class="payment-note">
       <h3>What happens next?</h3>
       <ol>
-        <li>Open your own banking app.</li>
-        <li>Enter Artemida's account details shown above.</li>
-        <li>Enter the deposit amount and payment reference from your approval email.</li>
-        <li>Check the details carefully before confirming the transfer.</li>
-        <li>Contact Artemida after making the payment.</li>
+        <li>Click the secure payment button above.</li>
+        <li>Check the deposit amount on Stripe Checkout.</li>
+        <li>Complete payment using the available payment methods.</li>
+        <li>Return to Hello Honey after Stripe confirms payment.</li>
       </ol>
       <p>
-        <strong>Important:</strong> This page does not take payment or
-        automatically verify a bank transfer. Your appointment is not
-        confirmed until Artemida has received and verified the deposit
-        and confirmed the appointment with you.
+        <strong>Need help?</strong> Contact Hello Honey if your payment link
+        doesn't work. Don't send card details by email or message.
       </p>
     </section>
 
@@ -216,44 +156,64 @@
   <script src="assets/site.js"></script>
   <script>
     (() => {
-      const status = document.getElementById("copy-status");
+      const button = document.getElementById("pay-button");
+      const status = document.getElementById("payment-status");
+      const params = new URLSearchParams(window.location.search);
+      const token = params.get("token");
 
-      async function copyText(text) {
-        try {
-          if (navigator.clipboard && window.isSecureContext) {
-            await navigator.clipboard.writeText(text);
-          } else {
-            const field = document.createElement("textarea");
-            field.value = text;
-            field.style.position = "fixed";
-            field.style.opacity = "0";
-            document.body.appendChild(field);
-            field.select();
-            const copied = document.execCommand("copy");
-            field.remove();
-            if (!copied) throw new Error("Copy unavailable");
-          }
-          status.textContent = "Copied successfully.";
-        } catch (_) {
+      button.addEventListener("click", async () => {
+        if (!token || !/^[a-f0-9]{64}$/i.test(token)) {
           status.textContent =
-            "Copy was unavailable. Please select and copy the details manually.";
+            "Your payment link is missing or invalid. Please open the secure link in your approval email or contact Hello Honey.";
+          return;
         }
+
+        button.disabled = true;
+        button.textContent = "Connecting securely…";
+        status.textContent = "Preparing your Stripe Checkout session.";
+
+        try {
+          const response = await fetch(
+            "https://vynemlcijhhlyuydtrhp.supabase.co/functions/v1/hello-honey-checkout",
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ token })
+            }
+          );
+
+          const result = await response.json().catch(() => ({}));
+
+          if (!response.ok || !result.url) {
+            throw new Error(
+              result.error || "We couldn't start the payment. Please try again."
+            );
+          }
+
+          if (
+            typeof result.url !== "string" ||
+            !result.url.startsWith("https://checkout.stripe.com/")
+          ) {
+            throw new Error("Stripe returned an invalid checkout address.");
+          }
+
+          window.location.assign(result.url);
+        } catch (error) {
+          status.textContent =
+            error instanceof Error
+              ? error.message
+              : "Unable to start payment. Please try again.";
+          button.disabled = false;
+          button.textContent = "Try secure card payment again";
+        }
+      });
+
+      if (!token) {
+        status.textContent =
+          "Open this page using the secure payment link in your Hello Honey approval email.";
       }
-
-      document.querySelectorAll("[data-copy]").forEach(button => {
-        button.addEventListener("click", () => {
-          copyText(button.dataset.copy);
-        });
-      });
-
-      document.getElementById("copy-all").addEventListener("click", () => {
-        copyText(
-          "Account name: Artemida Balliu\n" +
-          "Sort code: 20-25-96\n" +
-          "Account number: 33246507\n\n" +
-          "Please use the deposit amount and payment reference from your Hello Honey approval email."
-        );
-      });
     })();
   </script>
 </body>
