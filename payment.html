@@ -1,0 +1,260 @@
+
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#fffaf5">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Hello Honey bank transfer deposit instructions.">
+  <title>Pay Your Deposit | Hello Honey</title>
+  <link rel="stylesheet" href="assets/style.css">
+  <style>
+    .payment-wrap {
+      max-width: 680px;
+      margin: 42px auto;
+      padding: 20px;
+    }
+    .payment-card {
+      background: #fffaf0;
+      border: 1px solid #e6d5a8;
+      border-radius: 16px;
+      padding: 24px;
+      overflow-wrap: anywhere;
+    }
+    .payment-amount {
+      font-size: 2rem;
+      font-weight: 700;
+      color: #77734b;
+    }
+    .payment-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      padding: 13px 0;
+      border-bottom: 1px solid #e6d5a8;
+    }
+    .payment-row strong {
+      text-align: right;
+      overflow-wrap: anywhere;
+    }
+    .copy-button {
+      flex-shrink: 0;
+      border: 1px solid #77734b;
+      border-radius: 7px;
+      background: #fff;
+      color: #423b2b;
+      padding: 7px 10px;
+      cursor: pointer;
+      font: inherit;
+      font-size: .9rem;
+    }
+    .payment-note {
+      background: #f5edda;
+      border-radius: 9px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    .payment-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 22px;
+    }
+    .payment-actions button {
+      cursor: pointer;
+    }
+    #copy-status {
+      min-height: 1.5em;
+      margin-bottom: 0;
+    }
+    @media (max-width: 480px) {
+      .payment-wrap {
+        margin: 20px auto;
+        padding: 14px;
+      }
+      .payment-card {
+        padding: 17px;
+      }
+      .payment-row {
+        flex-wrap: wrap;
+      }
+      .payment-row strong {
+        text-align: left;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="announcement">
+    A little self-care, delivered to your door. North London, this one's for you.
+  </div>
+
+  <header>
+    <nav class="nav">
+      <a class="brand" href="index.html">
+        <strong>hello honey</strong>
+        <span>mobile nail studio</span>
+      </a>
+      <button class="menu-toggle" type="button"
+        aria-label="Open navigation" aria-expanded="false">☰</button>
+      <div class="navlinks">
+        <a href="index.html">Home</a>
+        <a href="services.html">Our services</a>
+        <a href="how-it-works.html">How it works</a>
+        <a href="book.html">Book your moment ↗</a>
+      </div>
+    </nav>
+  </header>
+
+  <main class="payment-wrap">
+    <div class="eyebrow">Hello Honey · Booking payment</div>
+    <h1>Let's take care of your <em>deposit.</em></h1>
+    <p>
+      Your appointment request has been approved. Follow the instructions
+      below to pay your deposit by bank transfer.
+    </p>
+
+    <section class="payment-card">
+      <h2>Deposit details</h2>
+      <p>Your deposit amount is shown in your Hello Honey approval email.</p>
+
+      <div class="payment-note">
+        <strong>Before you transfer</strong>
+        <p>
+          Open your approval email and check the exact deposit amount and
+          payment reference. Enter both exactly as shown in that email.
+        </p>
+      </div>
+
+      <h3 style="margin-top:24px">Bank account</h3>
+
+      <div class="payment-row">
+        <span>Account name</span>
+        <strong>Artemida Balliu</strong>
+        <button class="copy-button" type="button"
+          data-copy="Artemida Balliu">Copy</button>
+      </div>
+
+      <div class="payment-row">
+        <span>Sort code</span>
+        <strong>20-25-96</strong>
+        <button class="copy-button" type="button"
+          data-copy="20-25-96">Copy</button>
+      </div>
+
+      <div class="payment-row">
+        <span>Account number</span>
+        <strong>33246507</strong>
+        <button class="copy-button" type="button"
+          data-copy="33246507">Copy</button>
+      </div>
+
+      <div class="payment-row">
+        <span>Deposit amount</span>
+        <strong>Use the amount in your approval email</strong>
+      </div>
+
+      <div class="payment-row">
+        <span>Payment reference</span>
+        <strong>Use the reference in your approval email</strong>
+      </div>
+
+      <div class="payment-actions">
+        <button class="btn" id="copy-all" type="button">
+          Copy bank account details
+        </button>
+      </div>
+      <p id="copy-status" role="status" aria-live="polite"></p>
+    </section>
+
+    <section class="payment-note">
+      <h3>What happens next?</h3>
+      <ol>
+        <li>Open your own banking app.</li>
+        <li>Enter Artemida's account details shown above.</li>
+        <li>Enter the deposit amount and payment reference from your approval email.</li>
+        <li>Check the details carefully before confirming the transfer.</li>
+        <li>Contact Artemida after making the payment.</li>
+      </ol>
+      <p>
+        <strong>Important:</strong> This page does not take payment or
+        automatically verify a bank transfer. Your appointment is not
+        confirmed until Artemida has received and verified the deposit
+        and confirmed the appointment with you.
+      </p>
+    </section>
+
+    <p style="margin-top:24px">
+      <a href="book.html">← Return to the booking page</a>
+    </p>
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div>
+        <div class="footer-brand">hello honey</div>
+        <p>A little care. A lot of honey.<br>Beautiful nails. Your place. Your pace.</p>
+        <p>At home in North London</p>
+      </div>
+      <div>
+        <h4>Find your moment</h4>
+        <div class="footer-links">
+          <a href="services.html">Our services</a>
+          <a href="how-it-works.html">How it works</a>
+          <a href="book.html">Book your moment</a>
+        </div>
+      </div>
+    </div>
+    <div class="copyright">
+      <span>© 2026 Hello Honey</span>
+      <span>Good nails. Sweet moments. Your place.</span>
+    </div>
+  </footer>
+
+  <script src="assets/site.js"></script>
+  <script>
+    (() => {
+      const status = document.getElementById("copy-status");
+
+      async function copyText(text) {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const field = document.createElement("textarea");
+            field.value = text;
+            field.style.position = "fixed";
+            field.style.opacity = "0";
+            document.body.appendChild(field);
+            field.select();
+            const copied = document.execCommand("copy");
+            field.remove();
+            if (!copied) throw new Error("Copy unavailable");
+          }
+          status.textContent = "Copied successfully.";
+        } catch (_) {
+          status.textContent =
+            "Copy was unavailable. Please select and copy the details manually.";
+        }
+      }
+
+      document.querySelectorAll("[data-copy]").forEach(button => {
+        button.addEventListener("click", () => {
+          copyText(button.dataset.copy);
+        });
+      });
+
+      document.getElementById("copy-all").addEventListener("click", () => {
+        copyText(
+          "Account name: Artemida Balliu\n" +
+          "Sort code: 20-25-96\n" +
+          "Account number: 33246507\n\n" +
+          "Please use the deposit amount and payment reference from your Hello Honey approval email."
+        );
+      });
+    })();
+  </script>
+</body>
+</html>
