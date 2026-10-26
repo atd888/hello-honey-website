@@ -45,17 +45,17 @@
           <li>Please mention existing gel or builder product.</li>
           <li>No payment is taken at this stage.</li>
         </ul>
-        <div class="notice">Your request will be sent to Hello Honey by email. Your appointment is not confirmed until Artemida agrees the details with you.</div>
+        <div class="notice">Your request will be sent securely to Hello Honey. Your appointment is not confirmed until Artemida agrees the details with you.</div>
       </aside>
 
       <div class="form-card">
-        <form id="booking-form" action="https://formsubmit.co/artemidaballiu35@gmail.com" method="POST">
-          <input type="hidden" name="_subject" value="New Hello Honey Appointment Request">
-          <input type="hidden" name="Hello Honey Website" value="https://atd888.github.io/hello-honey-website/">
-          <input type="hidden" name="_next" value="https://atd888.github.io/hello-honey-website/thank-you.html">
-          <input type="hidden" name="_template" value="table">
-          <input type="hidden" name="Estimated total" id="estimated-total-email" value="£0">
-          <input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
+        <form id="booking-form">
+          <input type="hidden" id="estimated-total-email" value="£0">
+
+          <div aria-hidden="true" style="position:absolute;left:-10000px;width:1px;height:1px;overflow:hidden;">
+            <label for="website">Leave this field empty</label>
+            <input type="text" id="website" name="website" tabindex="-1" autocomplete="off">
+          </div>
 
           <div class="form-grid">
             <div class="field">
@@ -141,7 +141,8 @@
             <span>I understand this is an appointment request, not a confirmed booking. The treatment, price and availability must be confirmed before my appointment is accepted.</span>
           </label>
 
-          <button class="btn" type="submit">Send appointment request ↗</button>
+          <button class="btn" id="booking-submit-button" type="submit">Send appointment request ↗</button>
+          <p id="booking-submit-status" role="status" aria-live="polite" style="margin-top:1rem;" hidden></p>
         </form>
       </div>
     </div>
@@ -178,124 +179,198 @@
 
 <script>
 (function () {
-  function initBookingCalculator() {
-    const form = document.getElementById("booking-form");
-    const totalDisplay = document.getElementById("estimated-total");
-    const emailTotal = document.getElementById("estimated-total-email");
-    const treatmentInputs = Array.from(
-      document.querySelectorAll('input[name="Treatment"]')
-    );
-    const treatmentError = document.getElementById("treatment-error");
+  const form = document.getElementById("booking-form");
+  const totalDisplay = document.getElementById("estimated-total");
+  const emailTotal = document.getElementById("estimated-total-email");
+  const treatmentError = document.getElementById("treatment-error");
+  const treatmentInputs = Array.from(
+    document.querySelectorAll('input[name="Treatment"]')
+  );
 
-    if (!form || !totalDisplay || !emailTotal || treatmentInputs.length === 0) {
-      console.error("Hello Honey: booking calculator elements could not be found.");
+  let attemptedSubmit = false;
+
+  function updatePrice() {
+    const selected = treatmentInputs.filter(input => input.checked);
+    const hasOtherTreatment = selected.some(input =>
+      input.value !== "Gel Removal" &&
+      input.value !== "BIAB Removal"
+    );
+
+    const prices = {
+      "Gel Manicure": 32,
+      "BIAB Manicure": 42,
+      "BIAB Infills": 38,
+      "Pedicure": 42,
+      "Nail Art": 5
+    };
+
+    let total = 0;
+
+    selected.forEach(input => {
+      if (input.value === "Gel Removal") {
+        total += hasOtherTreatment ? 8 : 15;
+      } else if (input.value === "BIAB Removal") {
+        total += hasOtherTreatment ? 12 : 20;
+      } else {
+        total += prices[input.value] || 0;
+      }
+    });
+
+    totalDisplay.textContent = String(total);
+    emailTotal.value = "£" + total;
+    treatmentError.hidden = !(attemptedSubmit && selected.length === 0);
+  }
+
+  const serviceMap = {
+    "The Gel Manicure": "Gel Manicure",
+    "The BIAB Manicure": "BIAB Manicure",
+    "The Feel-good Pedicure": "Pedicure",
+    "A Little Nail Art": "Nail Art",
+    "Gentle Gel Removal": "Gel Removal"
+  };
+
+  const requestedService = new URLSearchParams(location.search).get("service");
+  const requestedValue = serviceMap[requestedService];
+
+  if (requestedValue) {
+    const match = treatmentInputs.find(input => input.value === requestedValue);
+    if (match) match.checked = true;
+  }
+
+  treatmentInputs.forEach(input => input.addEventListener("change", updatePrice));
+
+  form.addEventListener("submit", event => {
+    attemptedSubmit = true;
+    updatePrice();
+
+    if (!treatmentInputs.some(input => input.checked)) {
+      event.preventDefault();
+      treatmentError.hidden = false;
+      treatmentError.scrollIntoView({ behavior: "smooth", block: "center" });
+      treatmentInputs[0].focus();
+    }
+  });
+
+  updatePrice();
+})();
+</script>
+
+<script>
+(function () {
+  const FUNCTION_URL = "https://vynemlcijhhlyuydtrhp.supabase.co/functions/v1/hello-honey-bookings";
+  const PUBLISHABLE_KEY = "sb_publishable_jGrlWd0NLC1p6c4tYmaPDg_PMXPk4AW";
+
+  const form = document.getElementById("booking-form");
+  const button = document.getElementById("booking-submit-button");
+  const status = document.getElementById("booking-submit-status");
+  const treatmentError = document.getElementById("treatment-error");
+  let sending = false;
+
+  function value(id) {
+    const field = document.getElementById(id);
+    return field ? field.value.trim() : "";
+  }
+
+  function showStatus(message, isError) {
+    status.hidden = false;
+    status.textContent = message;
+    status.style.color = isError ? "#9b2c2c" : "#47623b";
+  }
+
+  form.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (sending) return;
+
+    const treatments = Array.from(
+      form.querySelectorAll('input[name="Treatment"]:checked')
+    ).map(input => input.value);
+
+    if (treatments.length === 0) {
+      treatmentError.hidden = false;
+      treatmentError.scrollIntoView({ behavior: "smooth", block: "center" });
+      form.querySelector('input[name="Treatment"]').focus();
       return;
     }
 
-    let attemptedSubmit = false;
+    if (!form.reportValidity()) return;
 
-    function updatePrice() {
-      const selected = treatmentInputs.filter(function (input) {
-        return input.checked;
-      });
+    const honeypot = document.getElementById("website");
+    if (honeypot && honeypot.value.trim() !== "") return;
 
-      const hasOtherTreatment = selected.some(function (input) {
-        return input.value !== "Gel Removal" &&
-               input.value !== "BIAB Removal";
-      });
+    status.hidden = true;
+    sending = true;
+    button.disabled = true;
+    button.textContent = "Sending your request…";
 
-      const prices = {
-        "Gel Manicure": 32,
-        "BIAB Manicure": 42,
-        "BIAB Infills": 38,
-        "Pedicure": 42,
-        "Nail Art": 5
-      };
-
-      let total = 0;
-
-      selected.forEach(function (input) {
-        if (input.value === "Gel Removal") {
-          total += hasOtherTreatment ? 8 : 15;
-        } else if (input.value === "BIAB Removal") {
-          total += hasOtherTreatment ? 12 : 20;
-        } else {
-          total += prices[input.value] || 0;
-        }
-      });
-
-      totalDisplay.textContent = String(total);
-      emailTotal.value = "£" + total;
-
-      if (treatmentError) {
-        treatmentError.hidden = !(
-          attemptedSubmit && selected.length === 0
-        );
-      }
-    }
-
-    // Read the requested service from links on the services page.
-    const requestedService = new URLSearchParams(
-      window.location.search
-    ).get("service");
-
-    // Match each service-page name to the booking checkbox value.
-    const serviceMap = {
-      "The Gel Manicure": "Gel Manicure",
-      "The BIAB Manicure": "BIAB Manicure",
-      "The Feel-good Pedicure": "Pedicure",
-      "A Little Nail Art": "Nail Art",
-      "Gentle Gel Removal": "Gel Removal"
+    const payload = {
+      name: value("name"),
+      email: value("email"),
+      phone: value("phone"),
+      postcode: value("postcode"),
+      address: value("address"),
+      treatments: treatments,
+      existingProduct: value("product"),
+      preferredDate: value("day") || null,
+      preferredTime: value("time"),
+      notes: value("notes"),
+      website: honeypot ? honeypot.value.trim() : ""
     };
 
-    const requestedValue = serviceMap[requestedService];
-
-    if (requestedValue) {
-      const matchingInput = treatmentInputs.find(function (input) {
-        return input.value === requestedValue;
+    try {
+      const response = await fetch(FUNCTION_URL, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "apikey": PUBLISHABLE_KEY
+        },
+        body: JSON.stringify(payload)
       });
 
-      if (matchingInput) {
-        matchingInput.checked = true;
+      let result = {};
+      try {
+        result = await response.json();
+      } catch (_) {}
+
+      if (!response.ok || result.success !== true) {
+        const message = typeof result.error === "string"
+          ? result.error
+          : "The request could not be confirmed.";
+        showStatus(
+          message + " If you're unsure whether it went through, please contact Hello Honey before trying again.",
+          true
+        );
+        return;
       }
+
+      const total = Number(result.estimatedTotal);
+      const totalText = Number.isFinite(total)
+        ? " Estimated total: £" + total.toFixed(2) + "."
+        : "";
+
+      showStatus(
+        "Thank you! Your appointment request has been sent to Artemida." +
+        totalText +
+        " This is a request, not a confirmed appointment. Artemida will review it and contact you.",
+        false
+      );
+
+      form.reset();
+      document.getElementById("estimated-total").textContent = "0";
+      document.getElementById("estimated-total-email").value = "£0";
+      treatmentError.hidden = true;
+      status.hidden = false;
+      status.scrollIntoView({ behavior: "smooth", block: "center" });
+    } catch (_) {
+      showStatus(
+        "We couldn't confirm whether your request was submitted. Please contact Hello Honey before trying again, so we can check for a duplicate.",
+        true
+      );
+    } finally {
+      sending = false;
+      button.disabled = false;
+      button.textContent = "Send appointment request ↗";
     }
-
-    treatmentInputs.forEach(function (input) {
-      input.addEventListener("change", updatePrice);
-    });
-
-    form.addEventListener("submit", function (event) {
-      const hasSelection = treatmentInputs.some(function (input) {
-        return input.checked;
-      });
-
-      attemptedSubmit = true;
-      updatePrice();
-
-      if (!hasSelection) {
-        event.preventDefault();
-
-        if (treatmentError) {
-          treatmentError.hidden = false;
-          treatmentError.scrollIntoView({
-            behavior: "smooth",
-            block: "center"
-          });
-        }
-
-        treatmentInputs[0].focus();
-      }
-    });
-
-    // Calculate the initial total, including any preselected treatment.
-    updatePrice();
-  }
-
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initBookingCalculator);
-  } else {
-    initBookingCalculator();
-  }
+  });
 })();
 </script>
 
