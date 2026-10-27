@@ -190,9 +190,10 @@
           if (result.paid === true && result.status === "paid") {
             document.getElementById("page-title").textContent =
               "Deposit verified!";
-            showStatus(
-              "Your deposit has been verified successfully."
-            );
+            document.querySelector(".card > p").textContent =
+              "Your deposit has been verified successfully.";
+            statusElement.textContent = "";
+            statusElement.style.display = "none";
             noteElement.textContent =
               "Thank you for booking with Hello Honey. We will contact you about your appointment details.";
             return;
