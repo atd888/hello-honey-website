@@ -56,3 +56,8 @@ header {
 footer {
   background: #393a2d;
 }
+
+/* Clear pricing, reliable filters and comfortable phone form controls. */
+[hidden]{display:none!important}
+.service-row-body .treatment-price{font-size:16px;font-weight:700;color:var(--ink)}
+@media(max-width:700px){.field input,.field select,.field textarea{font-size:16px}}
