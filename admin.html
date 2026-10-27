@@ -233,6 +233,7 @@
 
         const details = [
           ["Status", booking.status],
+          ["Deposit", booking.payment_status === "paid" ? "Paid" : "Not paid"],
           ["Email", booking.customer_email],
           ["Phone", booking.customer_phone],
           ["Postcode", booking.postcode],
