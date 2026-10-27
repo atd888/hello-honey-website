@@ -155,6 +155,8 @@
       async function verifyPayment() {
         const params = new URLSearchParams(window.location.search);
         const token = params.get("token") || "";
+        const isBalance = params.get("payment") === "balance";
+        if (isBalance) document.querySelector(".card > p").textContent = "We are securely checking your remaining-balance payment and updating your booking.";
         const sessionId = params.get("session_id") || "";
 
         if (!/^[a-fA-F0-9]{64}$/.test(token) ||
@@ -175,7 +177,8 @@
             },
             body: JSON.stringify({
               token: token,
-              session_id: sessionId
+              session_id: sessionId,
+              payment: isBalance ? "balance" : "deposit"
             })
           });
 
@@ -189,13 +192,13 @@
 
           if (result.paid === true && result.status === "paid") {
             document.getElementById("page-title").textContent =
-              "Deposit verified!";
+              isBalance ? "Fully paid!" : "Deposit verified!";
             document.querySelector(".card > p").textContent =
-              "Your deposit has been verified successfully.";
+              isBalance ? "Your remaining balance has been received and verified." : "Your deposit has been verified successfully.";
             statusElement.textContent = "";
             statusElement.style.display = "none";
             noteElement.textContent =
-              "Thank you for booking with Hello Honey. We will contact you about your appointment details.";
+              isBalance ? "Thank you for choosing Hello Honey. Your appointment is fully paid and nothing remains due." : "Thank you for booking with Hello Honey. We will contact you about your appointment details.";
             return;
           }
 

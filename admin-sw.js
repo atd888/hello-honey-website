@@ -1,0 +1,4 @@
+// No customer data, API responses or login tokens are cached.
+self.addEventListener('install',()=>self.skipWaiting());
+self.addEventListener('activate',event=>event.waitUntil(self.clients.claim()));
+self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.mode==='navigate'&&url.origin===self.location.origin&&url.pathname==='/admin.html'){event.respondWith(fetch(event.request).catch(()=>new Response('<!doctype html><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hello Honey · Offline</title><body style="font:17px Arial;background:#f7f3eb;color:#413b2e;padding:40px;line-height:1.6"><h1>Hello Honey</h1><p>You are offline. Connect to the internet to load bookings and send payment links.</p><a href="/admin.html">Try again</a>',{headers:{'Content-Type':'text/html'}})));}});

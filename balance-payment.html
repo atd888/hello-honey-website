@@ -1,0 +1,158 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f8f4eb">
+  <title>Pay Remaining Balance | Hello Honey</title>
+  <style>
+    :root {
+      --cream: #f8f4eb;
+      --ivory: #fffdf8;
+      --gold: #c6a45a;
+      --brown: #51452f;
+      --muted: #756d5e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background: var(--cream);
+      color: var(--brown);
+      font-family: Arial, Helvetica, sans-serif;
+    }
+    header {
+      padding: 22px 16px;
+      text-align: center;
+      background: var(--ivory);
+      border-bottom: 1px solid #e8dfcc;
+    }
+    .brand {
+      margin: 0;
+      font: 30px Georgia, "Times New Roman", serif;
+      letter-spacing: 1px;
+    }
+    .tagline {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+    main {
+      width: min(100% - 32px, 560px);
+      margin: auto;
+      padding: 42px 0;
+    }
+    .card {
+      padding: 34px 26px;
+      border: 1px solid #e8dfcc;
+      border-radius: 18px;
+      background: var(--ivory);
+      box-shadow: 0 8px 30px rgba(81,69,47,.06);
+      text-align: center;
+    }
+    .symbol {
+      width: 66px;
+      height: 66px;
+      display: grid;
+      place-items: center;
+      margin: 0 auto 20px;
+      border: 1px solid var(--gold);
+      border-radius: 50%;
+      color: var(--gold);
+      font-size: 31px;
+    }
+    h1 {
+      margin: 0 0 14px;
+      font: normal 28px Georgia, "Times New Roman", serif;
+    }
+    p {
+      color: var(--muted);
+      font-size: 15px;
+      line-height: 1.7;
+    }
+    .status {
+      margin: 22px 0;
+      padding: 14px;
+      border-radius: 10px;
+      background: #f5eedb;
+      color: var(--brown);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+    .button {
+      display: inline-block;
+      margin-top: 12px;
+      padding: 13px 22px;
+      border-radius: 7px;
+      background: var(--gold);
+      color: white;
+      font-size: 14px;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    footer {
+      padding: 18px;
+      color: var(--muted);
+      font-size: 12px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <p class="brand">Hello Honey</p>
+    <p class="tagline">Good nails. Sweet moments. Your place.</p>
+  </header>
+
+  <main>
+    <section class="card" aria-labelledby="page-title">
+      <div class="symbol" aria-hidden="true">♥</div>
+<h1 id="page-title">Your remaining balance</h1>      <p>
+        Thank you for your visit. Pay the remaining appointment balance securely with Stripe.
+      </p>
+
+      <div id="payment-status" class="status" role="status" aria-live="polite">
+        Your deposit has already been paid. Only the remaining balance is due.
+      </div>
+
+      <p id="booking-note">
+        Stripe will show the exact remaining amount before you pay. Please check the amount before confirming.
+      </p>
+
+      <button id="balance-pay" type="button" class="button" style="border:0;cursor:pointer">Continue to secure payment</button><br>
+      <a class="button" href="https://hello-honey.co.uk/">
+        Return to Hello Honey
+      </a>
+    </section>
+  </main>
+
+  <footer>
+    &copy; <span id="year"></span> Hello Honey. All rights reserved.
+  </footer>
+
+  <script>
+    (() => {
+      const button = document.getElementById("balance-pay");
+      const status = document.getElementById("payment-status");
+      document.getElementById("year").textContent = new Date().getFullYear();
+      const token = new URLSearchParams(location.search).get("token") || "";
+      if (!/^[a-f0-9]{64}$/i.test(token)) { status.textContent="Use the secure balance link in your Hello Honey email."; button.hidden=true; return; }
+      button.addEventListener("click", async () => {
+        button.disabled=true; status.textContent="Checking your remaining balance securely…";
+        try {
+          const response = await fetch("https://vynemlcijhhlyuydtrhp.supabase.co/functions/v1/hello-honey-verify-payment", {
+            method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({token,payment:"balance",action:"checkout"})
+          });
+          const result = await response.json();
+          if(!response.ok) throw new Error(result.error || "Please contact Hello Honey before trying again.");
+          if(result.paid===true) { document.getElementById("page-title").textContent="Fully paid!";status.textContent="Your remaining balance has already been received. No further payment is needed.";button.hidden=true;return; }
+          const url=new URL(result.checkoutUrl);if(url.protocol!=="https:"||url.hostname!=="checkout.stripe.com")throw new Error("Could not open secure checkout.");
+          location.assign(url.href);
+        } catch(error) { status.textContent=error.message || "Could not check payment. Contact Hello Honey before paying again.";button.disabled=false; }
+      });
+    })();
+  </script>
+</body></html>

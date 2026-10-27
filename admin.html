@@ -6,7 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#fffaf5">
   <meta name="robots" content="noindex, nofollow">
-  <title>Private Booking Dashboard | Hello Honey</title>
+  <title>Hello Honey Admin</title>
+  <link rel="manifest" href="admin.webmanifest">
+  <link rel="apple-touch-icon" href="admin-icon-180.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Hello Honey">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <link rel="stylesheet" href="assets/style.css">
   <style>
     .admin-wrap {
@@ -84,6 +89,54 @@
     [hidden] {
       display: none !important;
     }
+  
+    .signed-in .admin-wrap > .admin-card:first-child { position:relative; padding:18px 20px; }
+    .signed-in .admin-wrap > .admin-card:first-child > a, .signed-in .admin-wrap > .admin-card:first-child > p:not(#message) { display:none; }
+    .signed-in .admin-wrap > .admin-card:first-child h1 { font-size:28px; margin:0 0 14px; padding-right:80px; }
+    .signed-in #logout { position:absolute; top:12px;right:12px;font-size:12px;min-height:38px;padding:8px 10px;margin:0; }
+    :root { color-scheme: light; }
+    body { background:#f7f3eb; color:#413b2e; }
+    .announcement { background:#536047; color:#fffdf5; font-size:11px; letter-spacing:.14em; padding:11px; }
+    .admin-wrap { max-width:800px; margin:0 auto; padding:18px 16px calc(96px + env(safe-area-inset-bottom)); }
+    .admin-card { border-color:#e6dfd2; border-radius:20px; padding:22px; box-shadow:0 4px 24px #302f1910; }
+    .admin-card h1 { font-family:Georgia,serif; font-weight:400; font-size:34px; line-height:1.12; margin:18px 0 12px; }
+    .admin-card h2 { font-family:Georgia,serif; font-size:25px; font-weight:400; }
+    .admin-card h3 { font-size:20px; margin:0 0 10px; }
+    .admin-card button { min-height:46px; font-weight:600; }
+    .admin-card input,.admin-card textarea { font-size:16px; min-height:46px; background:#fffefb; }
+    .admin-card p { line-height:1.55; }
+    #dashboard { background:transparent; padding:0; box-shadow:none; border:0; }
+    .booking { background:#fffefb; border:1px solid #e6dfd2; border-radius:18px; padding:20px; margin:14px 0; box-shadow:0 4px 20px #302f1908; }
+    .booking p { margin:8px 0; }
+    .booking details { border-top:1px solid #e6dfd2; padding-top:12px; margin-top:16px; }
+    .booking summary { cursor:pointer; color:#6d7057; padding:4px 0; font-weight:600; }
+    .booking .approve,.booking .secondary { width:100%; margin:8px 0 0; }
+    .booking .delete-test { background:transparent; font-size:13px; color:#965b51; min-height:40px; }
+    .booking .state { display:inline-block; padding:6px 10px; border-radius:20px; background:#edf1e8; color:#425637; font-size:12px; font-weight:700; }
+    .booking .state.waiting { background:#fcf0d6; color:#7a6030; }
+    .booking .state.test { background:#eee; color:#666; }
+    .money-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:18px 0; }
+    .money-cell { border:1px solid #eee7dc; background:#faf7f0; border-radius:12px; padding:12px 8px; }
+    .money-cell span { display:block; font-size:11px; color:#77705f; margin-bottom:4px; }
+    .money-cell strong { font-size:20px; font-weight:600; }
+    .booking .action-note { font-size:13px; color:#756d5d; margin:10px 0; }
+    .appointment-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
+    .appointment-fields label { font-size:13px; font-weight:600; }
+    .appointment-fields input { margin-bottom:4px; }
+    .app-toolbar { position:fixed; z-index:10; bottom:0; left:0; right:0; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:#fffefbf5; border-top:1px solid #e2dacb; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 -3px 22px #302f1908; }
+    .app-toolbar button { flex:none; background:#536047; color:white; border:0; border-radius:12px; padding:13px 18px; min-height:48px; font:600 15px Arial,sans-serif; }
+    .app-toolbar p { margin:0; font-size:12px; line-height:1.5; color:#706a5e; }
+    .filters { display:flex; gap:8px; overflow-x:auto; padding:4px 0 8px; }
+    .filters button { border-radius:30px; margin:0; white-space:nowrap; padding:9px 15px; min-height:42px; border:1px solid #ded7c9; background:#fffcf6; font-size:13px; }
+    .filters button[aria-pressed="true"] { background:#536047; color:white; border-color:#536047; }
+    .app-tip { color:#716a5b; font-size:13px; border-top:1px solid #eee7dc; padding-top:14px; }
+    .app-tip summary { cursor:pointer; font-weight:600; }
+    .app-tip ol { padding-left:20px; line-height:1.65; }
+    .message { padding:0; font-size:14px; }
+    .message:not(:empty) { padding:12px; background:#f2efe5; border-radius:10px; }
+    #counts { font-size:13px; color:#736b5c; }
+    @media(min-width:640px) { .app-toolbar { max-width:760px; margin:auto; border:1px solid #e2dacb; border-radius:16px 16px 0 0; } .admin-wrap { padding-top:28px; } }
+    @media(max-width:380px) { .admin-wrap { padding-left:10px;padding-right:10px; } .admin-card,.booking { padding:16px; } .money-cell strong { font-size:18px; } }
   </style>
 </head>
 
@@ -97,7 +150,7 @@
       <a href="index.html">← Back to Hello Honey website</a>
 
       <h1>Booking dashboard</h1>
-      <p>Sign in to review appointment requests and manage decisions.</p>
+      <p>Your appointments, confirmations and payments—all in one place.</p>
 
       <p id="message" class="message" role="status" aria-live="polite"></p>
 
@@ -130,20 +183,20 @@
         Sign out
       </button>
 
-      <button id="refresh" class="secondary" type="button" hidden>
-        Refresh bookings
-      </button>
+      <details class="app-tip"><summary>Keep Hello Honey on your iPhone</summary><ol><li>Open this page in Safari.</li><li>Tap Share, then Add to Home Screen.</li><li>Keep the name Hello Honey and tap Add.</li></ol><p>Open the icon to manage bookings. An internet connection is needed to load bookings, send emails and check payments.</p></details>
     </section>
 
     <section id="dashboard" class="admin-card" hidden>
       <h2>Appointment requests</h2>
       <p>
-        Review each request. Approving or declining saves your decision
-        and then attempts to email the customer.
+        Approve requests, confirm appointments, and collect the remaining balance after treatment.
       </p>
+      <p id="counts"></p>
+      <nav class="filters" aria-label="Filter bookings"><button type="button" data-filter="active" aria-pressed="true">Active</button><button type="button" data-filter="payment" aria-pressed="false">Awaiting payment</button><button type="button" data-filter="paid" aria-pressed="false">Fully paid</button><button type="button" data-filter="all" aria-pressed="false">All bookings</button></nav>
       <div id="bookings"></div>
     </section>
   </main>
+  <div id="app-toolbar" class="app-toolbar" hidden><p id="last-sync">Ready to refresh<br>Payments update after verification</p><button id="refresh" type="button">↻ Refresh bookings</button></div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
@@ -161,7 +214,7 @@
     const OWNER_EMAIL = "artemidaballiu35@gmail.com";
 
     const RESET_PASSWORD_URL =
-      "https://atd888.github.io/hello-honey-website/reset-password.html";
+      "https://hello-honey.co.uk/reset-password.html";
 
     const message = document.getElementById("message");
     const loginForm = document.getElementById("login-form");
@@ -174,6 +227,76 @@
     const emailInput = document.getElementById("email");
 
     const processingBookings = new Set();
+    const appToolbar = document.getElementById("app-toolbar");
+    let currentFilter = "active";
+    let bookingCache = [];
+    let loadingBookings = false;
+    let signedIn = false;
+    let lastLoaded = 0;
+    const money = (pence) => "£" + (pence / 100).toFixed(2);
+    const isLegacyTest = (b) => b.payment_status === "paid" && /^cs_test_/.test(b.stripe_checkout_session_id || "");
+    const balanceDue = (b) => Math.max(0, Math.round(Number(b.estimated_total) * 100) - Number(b.deposit_amount_pence || 0));
+    function clearDrafts() { dashboard.querySelectorAll("[data-dirty]").forEach((el) => el.removeAttribute("data-dirty")); }
+    dashboard.addEventListener("input", (event) => event.target.setAttribute("data-dirty", "true"));
+    function passesFilter(b) {
+      if (currentFilter === "all") return true;
+      if (isLegacyTest(b) || b.status === "declined") return false;
+      if (currentFilter === "paid") return b.balance_payment_status === "paid";
+      if (currentFilter === "payment") return (b.status === "approved" && b.payment_status !== "paid") || b.balance_payment_status === "pending";
+      return b.balance_payment_status !== "paid";
+    }
+    document.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
+      if (dashboard.querySelector("[data-dirty]") && !confirm("Discard unsaved changes and change the booking filter?")) return;
+      currentFilter = button.dataset.filter;
+      document.querySelectorAll("[data-filter]").forEach((item) => item.setAttribute("aria-pressed", String(item === button)));
+      renderBookings(bookingCache);
+    }));
+    async function bookingAction(booking, decision, button, fields = {}) {
+      if (processingBookings.has(booking.id)) return;
+      const prompt = decision === "confirm_appointment"
+        ? "Confirm this appointment for " + fields.appointmentDate + " at " + fields.appointmentTime + " UK time and email " + booking.customer_email + "?"
+        : "Finish this treatment and email " + booking.customer_email + " a secure link to pay the remaining " + money(balanceDue(booking)) + "?";
+      if (!confirm(prompt)) return;
+      processingBookings.add(booking.id); button.disabled = true;
+      say("Saving and preparing the customer email…");
+      try {
+        const { data, error } = await client.functions.invoke("hello-honey-decision-email", { body: { bookingId: booking.id, decision, ...fields } });
+        if (error || !data?.success) {
+          let detail = data?.error || error?.message || "Please try again.";
+          if (error?.context) { try { detail = (await error.context.json()).error || detail; } catch (_) {} }
+          say("Could not complete the action: " + detail); return;
+        }
+        clearDrafts(); await loadBookings({ silent: true }); say(data.message || "Saved. Email accepted for delivery.");
+      } catch (_) { say("Connection interrupted. Refresh bookings before retrying so you can check what was saved."); }
+      finally { processingBookings.delete(booking.id); button.disabled = false; }
+    }
+    function addPaymentActions(card, booking) {
+      if (booking.status !== "approved" || booking.payment_status !== "paid" || isLegacyTest(booking)) return;
+      const note = document.createElement("p"); note.className = "action-note";
+      if (booking.balance_payment_status === "paid") {
+        note.textContent = "Fully paid. No balance remains." + (booking.balance_receipt_sent_at ? " Payment confirmation email accepted." : " Payment confirmation email is processing."); card.append(note); return;
+      }
+      if (!booking.balance_requested_at) {
+        const group = document.createElement("div"); group.className = "appointment-fields";
+        const dateLabel = document.createElement("label"); dateLabel.textContent = "Appointment date";
+        const date = document.createElement("input"); date.type = "date"; date.value = booking.confirmed_date || booking.preferred_date || ""; dateLabel.append(date);
+        const timeLabel = document.createElement("label"); timeLabel.textContent = "Time (UK)";
+        const time = document.createElement("input"); time.type = "time"; time.value = booking.confirmed_time || ""; timeLabel.append(time); group.append(dateLabel, timeLabel); card.append(group);
+        const confirmButton = document.createElement("button"); confirmButton.className = "secondary"; confirmButton.type = "button";
+        confirmButton.textContent = booking.appointment_confirmed_at ? "Update appointment & email client" : "Confirm appointment & email client";
+        confirmButton.addEventListener("click", () => {
+          if (!date.value || !time.value) { say("Choose the exact appointment date and time before confirming."); return; }
+          bookingAction(booking, "confirm_appointment", confirmButton, { appointmentDate: date.value, appointmentTime: time.value });
+        }); card.append(confirmButton);
+      }
+      if (booking.appointment_confirmed_at) {
+        const balanceButton = document.createElement("button"); balanceButton.className = "approve"; balanceButton.type = "button";
+        balanceButton.textContent = booking.balance_requested_at ? "Send balance link again" : "Finish treatment & send balance link";
+        balanceButton.addEventListener("click", () => bookingAction(booking, "request_balance", balanceButton)); card.append(balanceButton);
+        note.textContent = booking.balance_requested_at ? "Balance requested: " + money(balanceDue(booking)) + ". Refresh after the client pays. Sending again reuses the open checkout." : "After the treatment, send a secure payment link for " + money(balanceDue(booking)) + ".";
+      } else { note.textContent = "Deposit received. Confirm the exact appointment date and time to email the client."; }
+      card.append(note);
+    }
 
     const client = window.supabase.createClient(
       SUPABASE_URL,
@@ -181,7 +304,7 @@
     );
 
     function say(text) {
-      message.textContent = text;
+      message.textContent = ["Bookings up to date.", "Bookings loaded."].includes(text) ? "" : text;
     }
 
     function safeText(value) {
@@ -192,6 +315,8 @@
 
     async function loadBookings(options = {}) {
       const silent = options.silent === true;
+      if (loadingBookings || (options.automatic && (processingBookings.size || dashboard.querySelector("[data-dirty]")))) return false;
+      loadingBookings = true; refreshBtn.disabled = true;
 
       if (!silent) {
         say("Loading bookings…");
@@ -202,6 +327,7 @@
         .select("*")
         .order("created_at", { ascending: false });
 
+      loadingBookings = false; refreshBtn.disabled = false;
       if (error) {
         if (!silent) {
           say("Couldn't load bookings: " + error.message);
@@ -209,16 +335,24 @@
         return false;
       }
 
+      bookingCache = data || []; lastLoaded = Date.now();
+      document.getElementById("last-sync").textContent = "Updated " + new Date().toLocaleTimeString("en-GB", { hour:"2-digit", minute:"2-digit" }) + " · Auto-refresh while open";
+      renderBookings(bookingCache);
+      if (!silent) say("Bookings up to date.");
+      return true;
+    }
+    function renderBookings(allBookings) {
       bookingsEl.replaceChildren();
+      const data = allBookings.filter(passesFilter);
+      const active = allBookings.filter((b) => !isLegacyTest(b) && b.status !== "declined" && b.balance_payment_status !== "paid");
+      const paid = allBookings.filter((b) => !isLegacyTest(b) && b.balance_payment_status === "paid");
+      document.getElementById("counts").textContent = active.length + " active · " + paid.length + " fully paid";
 
       if (!data || data.length === 0) {
         const empty = document.createElement("p");
-        empty.textContent = "No booking requests found.";
+        empty.textContent = "No bookings in this view.";
         bookingsEl.appendChild(empty);
 
-        if (!silent) {
-          say("No booking requests found.");
-        }
 
         return true;
       }
@@ -231,6 +365,17 @@
         heading.textContent = safeText(booking.customer_name);
         card.appendChild(heading);
 
+        const badge = document.createElement("span"); badge.className = "state";
+        badge.textContent = isLegacyTest(booking) ? "Test booking" : booking.balance_payment_status === "paid" ? "Fully paid" : booking.balance_requested_at ? "Balance awaiting payment" : booking.appointment_confirmed_at ? "Appointment confirmed" : booking.payment_status === "paid" ? "Deposit paid · confirm appointment" : booking.status === "approved" ? "Awaiting deposit" : booking.status === "declined" ? "Declined" : "New request";
+        if (isLegacyTest(booking)) badge.classList.add("test"); else if (!booking.appointment_confirmed_at || booking.balance_payment_status === "pending") badge.classList.add("waiting");
+        card.append(badge);
+        const when = document.createElement("p"); when.textContent = (booking.confirmed_date || booking.preferred_date || "Date to agree") + " · " + (booking.confirmed_time || booking.preferred_time || "Time to agree") + (booking.confirmed_time ? " UK time" : ""); card.append(when);
+        const treatment = document.createElement("p"); treatment.textContent = Array.isArray(booking.treatments) ? booking.treatments.join(", ") : safeText(booking.treatments); card.append(treatment);
+        const totals = document.createElement("div"); totals.className = "money-grid";
+        const totalPence = Math.round(Number(booking.estimated_total) * 100);
+        const depositPence = booking.payment_status === "paid" ? Number(booking.deposit_amount_pence || Math.round(totalPence * .4)) : 0;
+        for (const [label, value] of [["Agreed total", totalPence], ["Deposit received", depositPence], ["Still due", booking.balance_payment_status === "paid" ? 0 : Math.max(0,totalPence-depositPence)]]) { const cell=document.createElement("div");cell.className="money-cell";const small=document.createElement("span");small.textContent=label;const strong=document.createElement("strong");strong.textContent=money(value);cell.append(small,strong);totals.append(cell); } card.append(totals);
+        const more = document.createElement("details"); const summary = document.createElement("summary"); summary.textContent = "Client & booking details"; more.append(summary);
         const details = [
           ["Status", booking.status],
           ["Deposit", booking.payment_status === "paid" ? "Paid" : "Not paid"],
@@ -263,7 +408,7 @@
           strong.textContent = label + ": ";
           p.appendChild(strong);
           p.appendChild(document.createTextNode(safeText(value)));
-          card.appendChild(p);
+          more.appendChild(p);
         });
 
         // Delete button for any booking.
@@ -280,7 +425,9 @@
           );
         });
 
-        card.appendChild(deleteBooking);
+        more.appendChild(deleteBooking);
+        card.append(more);
+        addPaymentActions(card, booking);
 
         if (booking.status === "pending") {
           const label = document.createElement("label");
@@ -325,10 +472,6 @@
 
         bookingsEl.appendChild(card);
       });
-
-      if (!silent) {
-        say("Bookings loaded.");
-      }
 
       return true;
     }
@@ -520,6 +663,10 @@
       }
 
       const user = data.session?.user;
+      signedIn = Boolean(user && user.id === OWNER_ID && (user.email || "").toLowerCase() === OWNER_EMAIL.toLowerCase());
+      appToolbar.hidden = !signedIn;
+      document.body.classList.toggle("signed-in", signedIn);
+      if (!signedIn) { bookingsEl.replaceChildren(); bookingCache=[]; clearDrafts(); }
 
       if (!user) {
         loginForm.hidden = false;
@@ -623,8 +770,19 @@
     });
 
     refreshBtn.addEventListener("click", () => {
-      loadBookings();
+      if (dashboard.querySelector("[data-dirty]") && !confirm("Refresh bookings and discard unsaved changes?")) return;
+      loadBookings().catch(() => { loadingBookings=false;refreshBtn.disabled=false;say("Could not refresh. Check your connection and try again."); });
     });
+    async function autoRefresh() {
+      if (signedIn && !document.hidden && Date.now()-lastLoaded > 15000) {
+        try { await loadBookings({silent:true,automatic:true}); } catch (_) { loadingBookings=false;refreshBtn.disabled=false;document.getElementById("last-sync").textContent="Offline or connection interrupted · Tap Refresh"; }
+      }
+    }
+    setInterval(autoRefresh, 45000);
+    document.addEventListener("visibilitychange", autoRefresh);
+    window.addEventListener("online", autoRefresh);
+    window.addEventListener("offline", () => { document.getElementById("last-sync").textContent="Offline · Connect to refresh or send emails"; });
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("admin-sw.js").catch(() => {});
 
     checkSession();
   })();
