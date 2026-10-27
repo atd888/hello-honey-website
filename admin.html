@@ -288,7 +288,7 @@
 
           const notes = document.createElement("textarea");
           notes.maxLength = 2000;
-          notes.placeholder = "Agreed details or reason for declining";
+          notes.placeholder = "Agreed details or reason for declining";            const totalLabel = document.createElement("label");           totalLabel.textContent = "Agreed total, including travel (£)";           const agreedTotal = document.createElement("input");           agreedTotal.type = "number"; agreedTotal.id = "agreed-total-" + booking.id; totalLabel.htmlFor = agreedTotal.id;           agreedTotal.min = "0.01";           agreedTotal.step = "0.01";           agreedTotal.required = true;           agreedTotal.placeholder =             Number(booking.estimated_total).toFixed(2);            const totalHelp = document.createElement("p");           totalHelp.textContent =             "Current estimate: £" +             Number(booking.estimated_total).toFixed(2) +             ". Enter the final total agreed with the customer before approval; the deposit will be based on this price.";
 
           const approve = document.createElement("button");
           approve.type = "button";
@@ -307,7 +307,7 @@
               booking.id,
               "approved",
               notes.value,
-              decisionButtons
+              decisionButtons, Number(agreedTotal.value), Number(booking.estimated_total)
             );
           });
 
@@ -316,11 +316,11 @@
               booking.id,
               "declined",
               notes.value,
-              decisionButtons
+              decisionButtons, Number(agreedTotal.value), Number(booking.estimated_total)
             );
           });
 
-          card.append(label, notes, approve, decline);
+          card.append(label, notes, totalLabel, agreedTotal, totalHelp, approve, decline);
         }
 
         bookingsEl.appendChild(card);
@@ -381,12 +381,12 @@
       }
     }
 
-    async function updateBooking(id, status, adminNotes, buttons) {
+    async function updateBooking(id, status, adminNotes, buttons, agreedTotal, currentEstimate) {
       if (!["approved", "declined"].includes(status)) {
         return;
       }
 
-      if (processingBookings.has(id)) {
+      if (status === "approved" && (!Number.isFinite(agreedTotal) || agreedTotal <= 0)) { say("Enter the final agreed total, including travel, before approving."); return; } if (processingBookings.has(id)) {
         return;
       }
 
@@ -409,7 +409,7 @@
           .from("hello_honey_bookings")
           .update({
             status: status,
-            admin_notes: adminNotes.trim() || null,
+            admin_notes: adminNotes.trim() || null, estimated_total: status === "approved" ? agreedTotal : currentEstimate,
             updated_at: new Date().toISOString()
           })
           .eq("id", id)

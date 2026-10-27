@@ -149,7 +149,7 @@
         new Date().getFullYear();
 
       function showStatus(message) {
-        statusElement.textContent = message;
+        statusElement.textContent = message; statusElement.hidden = message === "Your deposit has been verified successfully.";
       }
 
       async function verifyPayment() {
