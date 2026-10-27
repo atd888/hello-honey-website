@@ -158,7 +158,7 @@
         const sessionId = params.get("session_id") || "";
 
         if (!/^[a-fA-F0-9]{64}$/.test(token) ||
-            !/^cs_test_[A-Za-z0-9_]+$/.test(sessionId)) {
+            !/^cs_live_[A-Za-z0-9_]+$/.test(sessionId)) {
           showStatus(
             "We could not verify this checkout link. Please use the payment link from your Hello Honey email or contact us."
           );
