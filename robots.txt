@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://hello-honey.co.uk/sitemap.xml
