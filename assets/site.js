@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Make the first appointment offer easy to spot across customer pages.
   const announcement = document.querySelector(".announcement");
   if (announcement) {
-    announcement.innerHTML = '<span style="display:inline-block;background:#f2d35e;color:#342d24;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.05em;">🍯 FIRST APPOINTMENT</span><strong style="font-size:19px;font-weight:900;letter-spacing:.02em;">10% OFF</strong><span style="font-size:14px;font-weight:650;">your first visit</span><a href="book.html#booking-form" style="display:inline-block;background:#fff9ed;color:#3c4030;text-decoration:none;font-size:13px;font-weight:900;padding:10px 18px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.18);">BOOK NOW ↗</a>';
+    announcement.innerHTML = '<span style="display:inline-block;background:#f2d35e;color:#342d24;padding:7px 12px;border-radius:999px;font-size:12px;font-weight:900;letter-spacing:.05em;">🍯 FIRST APPOINTMENT</span><strong style="font-size:19px;font-weight:900;letter-spacing:.02em;">10% OFF</strong><span style="font-size:14px;font-weight:650;">automatically on your first appointment</span><a href="book.html#booking-form" style="display:inline-block;background:#fff9ed;color:#3c4030;text-decoration:none;font-size:13px;font-weight:900;padding:10px 18px;border-radius:999px;box-shadow:0 2px 0 rgba(0,0,0,.18);">BOOK NOW ↗</a>';
     Object.assign(announcement.style, {
       background: "#55313b",
       color: "#fff9ed",
