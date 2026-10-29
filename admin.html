@@ -129,6 +129,10 @@
     .filters { display:flex; gap:8px; overflow-x:auto; padding:4px 0 8px; }
     .filters button { border-radius:30px; margin:0; white-space:nowrap; padding:9px 15px; min-height:42px; border:1px solid #ded7c9; background:#fffcf6; font-size:13px; }
     .filters button[aria-pressed="true"] { background:#536047; color:white; border-color:#536047; }
+    .notification-card { border:1px solid #e6dfd2; border-radius:16px; background:#faf7f0; padding:16px; margin:14px 0 18px; }
+    .notification-card p { margin:8px 0; }
+    .notification-card button { background:#536047; color:white; }
+    #notification-status { font-size:13px; color:#716a5b; }
     .app-tip { color:#716a5b; font-size:13px; border-top:1px solid #eee7dc; padding-top:14px; }
     .app-tip summary { cursor:pointer; font-weight:600; }
     .app-tip ol { padding-left:20px; line-height:1.65; }
@@ -191,6 +195,12 @@
       <p>
         Approve requests, confirm appointments, and collect the remaining balance after treatment.
       </p>
+      <section class="notification-card" aria-labelledby="notification-heading">
+        <h3 id="notification-heading">Phone notifications</h3>
+        <p>Get an alert when a new appointment request arrives, even when this dashboard is closed.</p>
+        <button id="enable-notifications" type="button">Turn on phone notifications</button>
+        <p id="notification-status" role="status" aria-live="polite">Notifications are not set up yet.</p>
+      </section>
       <p id="counts"></p>
       <nav class="filters" aria-label="Filter bookings"><button type="button" data-filter="active" aria-pressed="true">Active</button><button type="button" data-filter="payment" aria-pressed="false">Awaiting payment</button><button type="button" data-filter="paid" aria-pressed="false">Fully paid</button><button type="button" data-filter="all" aria-pressed="false">All bookings</button></nav>
       <div id="bookings"></div>
@@ -225,6 +235,9 @@
     const forgotPasswordBtn =
       document.getElementById("forgot-password");
     const emailInput = document.getElementById("email");
+    const notificationButton = document.getElementById("enable-notifications");
+    const notificationStatus = document.getElementById("notification-status");
+    const VAPID_PUBLIC_KEY = "BJRyfjqB7SY3HpMYYNxiORtfQTDJV0z8_mhUra_K1FEokL0Z0kmb1DoiC4U48xODTweyUo46epxMFfGjFr4ztP0";
 
     const processingBookings = new Set();
     const appToolbar = document.getElementById("app-toolbar");
@@ -302,6 +315,89 @@
       SUPABASE_URL,
       SUPABASE_PUBLISHABLE_KEY
     );
+
+    function isHomeScreenApp() {
+      return window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+    }
+    function base64UrlToBytes(value) {
+      const padded = value + "=".repeat((4 - value.length % 4) % 4);
+      const raw = atob(padded.replace(/-/g, "+").replace(/_/g, "/"));
+      return Uint8Array.from(raw, (character) => character.charCodeAt(0));
+    }
+    function isPushSupported() {
+      return "serviceWorker" in navigator && "PushManager" in window && "Notification" in window;
+    }
+    async function updateNotificationStatus() {
+      if (!isPushSupported()) {
+        notificationStatus.textContent = "This browser cannot receive phone notifications. Open the Hello Honey icon on your iPhone.";
+        notificationButton.disabled = true;
+        return;
+      }
+      if (!isHomeScreenApp()) {
+        notificationStatus.textContent = "Open the Hello Honey icon on your Home Screen to turn notifications on.";
+        notificationButton.disabled = false;
+        return;
+      }
+      if (Notification.permission === "denied") {
+        notificationStatus.textContent = "Notifications are blocked in iPhone Settings. Allow them for Hello Honey there.";
+        notificationButton.disabled = true;
+        return;
+      }
+      try {
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription();
+        notificationStatus.textContent = subscription && Notification.permission === "granted"
+          ? "Phone notifications are on."
+          : "Turn notifications on once to receive new booking alerts.";
+        notificationButton.textContent = subscription ? "Notifications are on" : "Turn on phone notifications";
+        notificationButton.disabled = Boolean(subscription);
+      } catch (_) {
+        notificationStatus.textContent = "Could not check notifications. Refresh the page and try again.";
+      }
+    }
+    notificationButton.addEventListener("click", async () => {
+      if (!isPushSupported()) {
+        notificationStatus.textContent = "This browser cannot receive phone notifications.";
+        return;
+      }
+      if (!isHomeScreenApp()) {
+        notificationStatus.textContent = "On your iPhone, open this page in Safari, tap Share, then Add to Home Screen. Open the new Hello Honey icon and try again.";
+        return;
+      }
+      notificationButton.disabled = true;
+      notificationStatus.textContent = "Asking iPhone to allow notifications…";
+      try {
+        const permission = Notification.permission === "granted"
+          ? "granted"
+          : await Notification.requestPermission();
+        if (permission !== "granted") {
+          notificationStatus.textContent = "Notifications were not allowed. You can turn them on later in iPhone Settings.";
+          notificationButton.disabled = false;
+          return;
+        }
+        const registration = await navigator.serviceWorker.ready;
+        const subscription = await registration.pushManager.getSubscription() || await registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: base64UrlToBytes(VAPID_PUBLIC_KEY)
+        });
+        const json = subscription.toJSON();
+        const userResult = await client.auth.getUser();
+        const owner = userResult.data?.user;
+        if (userResult.error || !owner || owner.id !== OWNER_ID) throw new Error("Please sign in to the owner dashboard again.");
+        const { error } = await client.from("hello_honey_admin_push_subscriptions").upsert({
+          owner_id: owner.id,
+          endpoint: subscription.endpoint,
+          p256dh: json.keys?.p256dh,
+          auth: json.keys?.auth
+        }, { onConflict: "endpoint" });
+        if (error) throw error;
+        notificationStatus.textContent = "Phone notifications are on. We’ll alert you when a new request arrives.";
+        notificationButton.textContent = "Notifications are on";
+      } catch (error) {
+        notificationStatus.textContent = "Could not turn notifications on: " + (error instanceof Error ? error.message : "Please try again.");
+        notificationButton.disabled = false;
+      }
+    });
 
     function say(text) {
       message.textContent = ["Bookings up to date.", "Bookings loaded."].includes(text) ? "" : text;
@@ -700,6 +796,7 @@
       forgotPasswordBtn.hidden = true;
 
       await loadBookings();
+      await updateNotificationStatus();
     }
 
     forgotPasswordBtn.addEventListener("click", async () => {
@@ -782,7 +879,7 @@
     document.addEventListener("visibilitychange", autoRefresh);
     window.addEventListener("online", autoRefresh);
     window.addEventListener("offline", () => { document.getElementById("last-sync").textContent="Offline · Connect to refresh or send emails"; });
-    if ("serviceWorker" in navigator) navigator.serviceWorker.register("admin-sw.js").catch(() => {});
+    if ("serviceWorker" in navigator) navigator.serviceWorker.register("/admin-sw.js", { scope: "/" }).catch(() => {});
 
     checkSession();
   })();
