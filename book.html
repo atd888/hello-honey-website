@@ -363,7 +363,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
 
       const total = Number(result.estimatedTotal);
       const totalText = Number.isFinite(total)
-        ? " Estimated total: £" + total.toFixed(2) + "."
+        ? (result.discountApplied === true && Number(result.discountAmount) > 0 ? " Your 10% first-appointment offer has been applied, saving £" + Number(result.discountAmount).toFixed(2) + ". Your estimated treatment total after the offer is £" + total.toFixed(2) + "." : " Your estimated treatment total is £" + total.toFixed(2) + ".")
         : "";
 
       showStatus(
