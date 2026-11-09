@@ -193,7 +193,7 @@
     <section id="dashboard" class="admin-card" hidden>
       <h2>Appointment requests</h2>
       <p>
-        Approve requests, confirm appointments, and collect the remaining balance after treatment.
+        Review requests, confirm appointments without a deposit, and record cash or bank-transfer payments after treatment.
       </p>
       <section class="notification-card" aria-labelledby="notification-heading">
         <h3 id="notification-heading">Phone notifications</h3>
@@ -202,7 +202,7 @@
         <p id="notification-status" role="status" aria-live="polite">Notifications are not set up yet.</p>
       </section>
       <p id="counts"></p>
-      <nav class="filters" aria-label="Filter bookings"><button type="button" data-filter="active" aria-pressed="true">Active</button><button type="button" data-filter="payment" aria-pressed="false">Awaiting payment</button><button type="button" data-filter="paid" aria-pressed="false">Fully paid</button><button type="button" data-filter="all" aria-pressed="false">All bookings</button></nav>
+      <nav class="filters" aria-label="Filter bookings"><button type="button" data-filter="active" aria-pressed="true">Active</button><button type="button" data-filter="payment" aria-pressed="false">Payment due</button><button type="button" data-filter="paid" aria-pressed="false">Fully paid</button><button type="button" data-filter="all" aria-pressed="false">All bookings</button></nav>
       <div id="bookings"></div>
     </section>
   </main>
@@ -255,7 +255,7 @@
       if (currentFilter === "all") return true;
       if (isLegacyTest(b) || b.status === "declined") return false;
       if (currentFilter === "paid") return b.balance_payment_status === "paid";
-      if (currentFilter === "payment") return (b.status === "approved" && b.payment_status !== "paid") || b.balance_payment_status === "pending";
+      if (currentFilter === "payment") return b.status === "approved" && !!b.appointment_confirmed_at && b.balance_payment_status !== "paid";
       return b.balance_payment_status !== "paid";
     }
     document.querySelectorAll("[data-filter]").forEach((button) => button.addEventListener("click", () => {
@@ -267,11 +267,13 @@
     async function bookingAction(booking, decision, button, fields = {}) {
       if (processingBookings.has(booking.id)) return;
       const prompt = decision === "confirm_appointment"
-        ? "Confirm this appointment for " + fields.appointmentDate + " at " + fields.appointmentTime + " UK time and email " + booking.customer_email + "?"
-        : "Finish this treatment and email " + booking.customer_email + " a secure link to pay the remaining " + money(balanceDue(booking)) + "?";
+        ? "Confirm this appointment without a deposit for " + fields.appointmentDate + " at " + fields.appointmentTime + " UK time and email " + booking.customer_email + "?"
+        : decision === "mark_paid"
+          ? "Record " + money(balanceDue(booking)) + " as RECEIVED by " + (fields.paymentMethod === "cash" ? "cash" : "bank transfer") + " after the completed treatment? Only continue after checking the money has actually arrived."
+          : "Send the appointment decision email to " + booking.customer_email + "? No payment link will be sent.";
       if (!confirm(prompt)) return;
       processingBookings.add(booking.id); button.disabled = true;
-      say("Saving and preparing the customer email…");
+      say(decision === "mark_paid" ? "Recording received payment…" : "Saving and preparing the customer email…");
       try {
         const { data, error } = await client.functions.invoke("hello-honey-decision-email", { body: { bookingId: booking.id, decision, ...fields } });
         if (error || !data?.success) {
@@ -284,30 +286,39 @@
       finally { processingBookings.delete(booking.id); button.disabled = false; }
     }
     function addPaymentActions(card, booking) {
-      if (booking.status !== "approved" || booking.payment_status !== "paid" || isLegacyTest(booking)) return;
+      if (booking.status !== "approved" || isLegacyTest(booking)) return;
       const note = document.createElement("p"); note.className = "action-note";
       if (booking.balance_payment_status === "paid") {
-        note.textContent = "Fully paid. No balance remains." + (booking.balance_receipt_sent_at ? " Payment confirmation email accepted." : " Payment confirmation email is processing."); card.append(note); return;
+        note.textContent = booking.offline_payment_method
+          ? "Fully paid by " + (booking.offline_payment_method === "cash" ? "cash" : "bank transfer") + ". Payment recorded after treatment."
+          : "Fully paid. No balance remains." + (booking.balance_receipt_sent_at ? " Payment confirmation email accepted." : "");
+        card.append(note); return;
       }
-      if (!booking.balance_requested_at) {
-        const group = document.createElement("div"); group.className = "appointment-fields";
-        const dateLabel = document.createElement("label"); dateLabel.textContent = "Appointment date";
-        const date = document.createElement("input"); date.type = "date"; date.value = booking.confirmed_date || booking.preferred_date || ""; dateLabel.append(date);
-        const timeLabel = document.createElement("label"); timeLabel.textContent = "Time (UK)";
-        const time = document.createElement("input"); time.type = "time"; time.value = booking.confirmed_time || ""; timeLabel.append(time); group.append(dateLabel, timeLabel); card.append(group);
-        const confirmButton = document.createElement("button"); confirmButton.className = "secondary"; confirmButton.type = "button";
-        confirmButton.textContent = booking.appointment_confirmed_at ? "Update appointment & email client" : "Confirm appointment & email client";
-        confirmButton.addEventListener("click", () => {
-          if (!date.value || !time.value) { say("Choose the exact appointment date and time before confirming."); return; }
-          bookingAction(booking, "confirm_appointment", confirmButton, { appointmentDate: date.value, appointmentTime: time.value });
-        }); card.append(confirmButton);
-      }
+      const group = document.createElement("div"); group.className = "appointment-fields";
+      const dateLabel = document.createElement("label"); dateLabel.textContent = "Appointment date";
+      const date = document.createElement("input"); date.type = "date"; date.value = booking.confirmed_date || booking.preferred_date || ""; dateLabel.append(date);
+      const timeLabel = document.createElement("label"); timeLabel.textContent = "Time (UK)";
+      const time = document.createElement("input"); time.type = "time"; time.value = booking.confirmed_time || ""; timeLabel.append(time); group.append(dateLabel, timeLabel); card.append(group);
+      const confirmButton = document.createElement("button"); confirmButton.className = "secondary"; confirmButton.type = "button";
+      confirmButton.textContent = booking.appointment_confirmed_at ? "Update appointment & email client" : "Confirm appointment & email client";
+      confirmButton.addEventListener("click", () => {
+        if (!date.value || !time.value) { say("Choose the exact appointment date and time before confirming."); return; }
+        bookingAction(booking, "confirm_appointment", confirmButton, { appointmentDate: date.value, appointmentTime: time.value });
+      }); card.append(confirmButton);
+      const resendDecision = document.createElement("button"); resendDecision.type="button"; resendDecision.className="secondary"; resendDecision.textContent="Resend approval email";
+      resendDecision.addEventListener("click",()=>bookingAction(booking,"approved",resendDecision));card.append(resendDecision);
       if (booking.appointment_confirmed_at) {
-        const balanceButton = document.createElement("button"); balanceButton.className = "approve"; balanceButton.type = "button";
-        balanceButton.textContent = booking.balance_requested_at ? "Send balance link again" : "Finish treatment & send balance link";
-        balanceButton.addEventListener("click", () => bookingAction(booking, "request_balance", balanceButton)); card.append(balanceButton);
-        note.textContent = booking.balance_requested_at ? "Balance requested: " + money(balanceDue(booking)) + ". Refresh after the client pays. Sending again reuses the open checkout." : "After the treatment, send a secure payment link for " + money(balanceDue(booking)) + ".";
-      } else { note.textContent = "Deposit received. Confirm the exact appointment date and time to email the client."; }
+        const methodLabel=document.createElement("label");methodLabel.textContent="Payment received by";
+        const method=document.createElement("select");
+        for(const [value,label] of [["cash","Cash"],["bank_transfer","Bank transfer"]]){const option=document.createElement("option");option.value=value;option.textContent=label;method.append(option);}methodLabel.append(method);card.append(methodLabel);
+        const completedLabel=document.createElement("label"),receivedLabel=document.createElement("label");
+        const completed=document.createElement("input"),received=document.createElement("input");completed.type=received.type="checkbox";
+        completedLabel.append(completed,document.createTextNode(" Treatment has been completed"));receivedLabel.append(received,document.createTextNode(" I have checked and received the full amount due"));card.append(completedLabel,receivedLabel);
+        const paidButton=document.createElement("button");paidButton.type="button";paidButton.className="approve";paidButton.textContent="Mark "+money(balanceDue(booking))+" as paid";paidButton.disabled=true;
+        const enable=()=>{paidButton.disabled=!(completed.checked&&received.checked);};completed.addEventListener("change",enable);received.addEventListener("change",enable);
+        paidButton.addEventListener("click",()=>bookingAction(booking,"mark_paid",paidButton,{paymentMethod:method.value,treatmentCompleted:completed.checked,paymentReceived:received.checked,expectedOutstandingPence:balanceDue(booking)}));card.append(paidButton);
+        note.textContent="Collect "+money(balanceDue(booking))+" after treatment. Check cash or your bank balance before marking paid. This records money received; it does not charge the client or send an email.";
+      } else { note.textContent = "No deposit required. Confirm the exact appointment date and time to email the client. Payment is due after treatment."; }
       card.append(note);
     }
 
@@ -462,7 +473,7 @@
         card.appendChild(heading);
 
         const badge = document.createElement("span"); badge.className = "state";
-        badge.textContent = isLegacyTest(booking) ? "Test booking" : booking.balance_payment_status === "paid" ? "Fully paid" : booking.balance_requested_at ? "Balance awaiting payment" : booking.appointment_confirmed_at ? "Appointment confirmed" : booking.payment_status === "paid" ? "Deposit paid · confirm appointment" : booking.status === "approved" ? "Awaiting deposit" : booking.status === "declined" ? "Declined" : "New request";
+        badge.textContent = isLegacyTest(booking) ? "Test booking" : booking.balance_payment_status === "paid" ? "Fully paid" : booking.balance_requested_at ? "Payment due after treatment" : booking.appointment_confirmed_at ? "Appointment confirmed" : booking.payment_status === "paid" ? "Previous deposit credited · confirm appointment" : booking.status === "approved" ? "Approved · confirm appointment" : booking.status === "declined" ? "Declined" : "New request";
         if (isLegacyTest(booking)) badge.classList.add("test"); else if (!booking.appointment_confirmed_at || booking.balance_payment_status === "pending") badge.classList.add("waiting");
         card.append(badge);
         const when = document.createElement("p"); when.textContent = (booking.confirmed_date || booking.preferred_date || "Date to agree") + " · " + (booking.confirmed_time || booking.preferred_time || "Time to agree") + (booking.confirmed_time ? " UK time" : ""); card.append(when);
@@ -470,11 +481,11 @@
         const totals = document.createElement("div"); totals.className = "money-grid";
         const totalPence = Math.round(Number(booking.estimated_total) * 100);
         const depositPence = booking.payment_status === "paid" ? Number(booking.deposit_amount_pence || Math.round(totalPence * .4)) : 0;
-        for (const [label, value] of [["Agreed total", totalPence], ["Deposit received", depositPence], ["Still due", booking.balance_payment_status === "paid" ? 0 : Math.max(0,totalPence-depositPence)]]) { const cell=document.createElement("div");cell.className="money-cell";const small=document.createElement("span");small.textContent=label;const strong=document.createElement("strong");strong.textContent=money(value);cell.append(small,strong);totals.append(cell); } card.append(totals);
+        for (const [label, value] of [["Agreed total", totalPence], ["Previously paid", depositPence], ["Still due", booking.balance_payment_status === "paid" ? 0 : Math.max(0,totalPence-depositPence)]]) { const cell=document.createElement("div");cell.className="money-cell";const small=document.createElement("span");small.textContent=label;const strong=document.createElement("strong");strong.textContent=money(value);cell.append(small,strong);totals.append(cell); } card.append(totals);
         const more = document.createElement("details"); const summary = document.createElement("summary"); summary.textContent = "Client & booking details"; more.append(summary);
         const details = [
           ["Status", booking.status],
-          ["Deposit", booking.payment_status === "paid" ? "Paid" : "Not paid"],
+          ["Payment", booking.offline_payment_method ? "Received by " + booking.offline_payment_method.replace("_", " ") : booking.balance_payment_status === "paid" ? "Fully paid (previous online payment)" : "Pay after treatment; no deposit required"],
           ["Email", booking.customer_email],
           ["Phone", booking.customer_phone],
           ["Postcode", booking.postcode],
@@ -531,12 +542,12 @@
 
           const notes = document.createElement("textarea");
           notes.maxLength = 2000;
-          notes.placeholder = "Agreed details or reason for declining";            const totalLabel = document.createElement("label");           totalLabel.textContent = "Agreed total, including travel (£)";           const agreedTotal = document.createElement("input");           agreedTotal.type = "number"; agreedTotal.id = "agreed-total-" + booking.id; totalLabel.htmlFor = agreedTotal.id;           agreedTotal.min = "0.01";           agreedTotal.step = "0.01";           agreedTotal.required = true;           agreedTotal.placeholder =             Number(booking.estimated_total).toFixed(2);            const totalHelp = document.createElement("p");           totalHelp.textContent =             "Current estimate: £" +             Number(booking.estimated_total).toFixed(2) +             ". Enter the final total agreed with the customer before approval; the deposit will be based on this price.";
+          notes.placeholder = "Agreed details or reason for declining";            const totalLabel = document.createElement("label");           totalLabel.textContent = "Agreed total, including travel (£)";           const agreedTotal = document.createElement("input");           agreedTotal.type = "number"; agreedTotal.id = "agreed-total-" + booking.id; totalLabel.htmlFor = agreedTotal.id;           agreedTotal.min = "0.01";           agreedTotal.step = "0.01";           agreedTotal.required = true;           agreedTotal.placeholder =             Number(booking.estimated_total).toFixed(2);            const totalHelp = document.createElement("p");           totalHelp.textContent =             "Current estimate: £" +             Number(booking.estimated_total).toFixed(2) +             ". Enter the final total agreed with the customer before approval; the client pays after treatment by cash or bank transfer. No deposit is required.";
 
           const approve = document.createElement("button");
           approve.type = "button";
           approve.className = "approve";
-          approve.textContent = "Approve booking";
+          approve.textContent = "Approve request (no deposit)";
 
           const decline = document.createElement("button");
           decline.type = "button";
