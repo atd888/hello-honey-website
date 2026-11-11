@@ -99,3 +99,8 @@ footer {
   /* Let the offer scroll away so larger text has room below the sticky menu. */
   .announcement { position:static!important; }
 }
+
+/* Show the client’s complete nail results, with captions outside the photo. */
+.client-gallery .gallery-item { margin:0; min-width:0; }
+.client-gallery .gallery-item img { width:100%; height:auto; aspect-ratio:3/4; min-height:0; object-fit:contain; }
+.client-gallery .gallery-label { position:static; display:block; font-family:var(--sans); font-size:17px; padding:14px 16px; line-height:1.5; }
