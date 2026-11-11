@@ -12,7 +12,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Hello Honey">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <link rel="stylesheet" href="assets/style.css">
+  <link rel="stylesheet" href="assets/style.css?v=20261111-readable">
   <style>
     .admin-wrap {
       max-width: 1000px;
@@ -93,10 +93,10 @@
     .signed-in .admin-wrap > .admin-card:first-child { position:relative; padding:18px 20px; }
     .signed-in .admin-wrap > .admin-card:first-child > a, .signed-in .admin-wrap > .admin-card:first-child > p:not(#message) { display:none; }
     .signed-in .admin-wrap > .admin-card:first-child h1 { font-size:28px; margin:0 0 14px; padding-right:80px; }
-    .signed-in #logout { position:absolute; top:12px;right:12px;font-size:12px;min-height:38px;padding:8px 10px;margin:0; }
+    .signed-in #logout { position:absolute; top:12px;right:12px;font-size:15px;min-height:38px;padding:8px 10px;margin:0; }
     :root { color-scheme: light; }
     body { background:#f7f3eb; color:#413b2e; }
-    .announcement { background:#536047; color:#fffdf5; font-size:11px; letter-spacing:.14em; padding:11px; }
+    .announcement { background:#536047; color:#fffdf5; font-size:14px; letter-spacing:.14em; padding:11px; }
     .admin-wrap { max-width:800px; margin:0 auto; padding:18px 16px calc(96px + env(safe-area-inset-bottom)); }
     .admin-card { border-color:#e6dfd2; border-radius:20px; padding:22px; box-shadow:0 4px 24px #302f1910; }
     .admin-card h1 { font-family:Georgia,serif; font-weight:400; font-size:34px; line-height:1.12; margin:18px 0 12px; }
@@ -111,34 +111,34 @@
     .booking details { border-top:1px solid #e6dfd2; padding-top:12px; margin-top:16px; }
     .booking summary { cursor:pointer; color:#6d7057; padding:4px 0; font-weight:600; }
     .booking .approve,.booking .secondary { width:100%; margin:8px 0 0; }
-    .booking .delete-test { background:transparent; font-size:13px; color:#965b51; min-height:40px; }
-    .booking .state { display:inline-block; padding:6px 10px; border-radius:20px; background:#edf1e8; color:#425637; font-size:12px; font-weight:700; }
+    .booking .delete-test { background:transparent; font-size:16px; color:#965b51; min-height:40px; }
+    .booking .state { display:inline-block; padding:6px 10px; border-radius:20px; background:#edf1e8; color:#425637; font-size:15px; font-weight:700; }
     .booking .state.waiting { background:#fcf0d6; color:#7a6030; }
     .booking .state.test { background:#eee; color:#666; }
     .money-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:18px 0; }
     .money-cell { border:1px solid #eee7dc; background:#faf7f0; border-radius:12px; padding:12px 8px; }
-    .money-cell span { display:block; font-size:11px; color:#77705f; margin-bottom:4px; }
+    .money-cell span { display:block; font-size:14px; color:#77705f; margin-bottom:4px; }
     .money-cell strong { font-size:20px; font-weight:600; }
-    .booking .action-note { font-size:13px; color:#756d5d; margin:10px 0; }
+    .booking .action-note { font-size:16px; color:#756d5d; margin:10px 0; }
     .appointment-fields { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:14px; }
-    .appointment-fields label { font-size:13px; font-weight:600; }
+    .appointment-fields label { font-size:16px; font-weight:600; }
     .appointment-fields input { margin-bottom:4px; }
     .app-toolbar { position:fixed; z-index:10; bottom:0; left:0; right:0; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); background:#fffefbf5; border-top:1px solid #e2dacb; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 -3px 22px #302f1908; }
-    .app-toolbar button { flex:none; background:#536047; color:white; border:0; border-radius:12px; padding:13px 18px; min-height:48px; font:600 15px Arial,sans-serif; }
-    .app-toolbar p { margin:0; font-size:12px; line-height:1.5; color:#706a5e; }
+    .app-toolbar button { flex:none; background:#536047; color:white; border:0; border-radius:12px; padding:13px 18px; min-height:48px; font:600 16px Arial,sans-serif; }
+    .app-toolbar p { margin:0; font-size:15px; line-height:1.5; color:#706a5e; }
     .filters { display:flex; gap:8px; overflow-x:auto; padding:4px 0 8px; }
-    .filters button { border-radius:30px; margin:0; white-space:nowrap; padding:9px 15px; min-height:42px; border:1px solid #ded7c9; background:#fffcf6; font-size:13px; }
+    .filters button { border-radius:30px; margin:0; white-space:nowrap; padding:9px 15px; min-height:42px; border:1px solid #ded7c9; background:#fffcf6; font-size:16px; }
     .filters button[aria-pressed="true"] { background:#536047; color:white; border-color:#536047; }
     .notification-card { border:1px solid #e6dfd2; border-radius:16px; background:#faf7f0; padding:16px; margin:14px 0 18px; }
     .notification-card p { margin:8px 0; }
     .notification-card button { background:#536047; color:white; }
-    #notification-status { font-size:13px; color:#716a5b; }
-    .app-tip { color:#716a5b; font-size:13px; border-top:1px solid #eee7dc; padding-top:14px; }
+    #notification-status { font-size:16px; color:#716a5b; }
+    .app-tip { color:#716a5b; font-size:16px; border-top:1px solid #eee7dc; padding-top:14px; }
     .app-tip summary { cursor:pointer; font-weight:600; }
     .app-tip ol { padding-left:20px; line-height:1.65; }
-    .message { padding:0; font-size:14px; }
+    .message { padding:0; font-size:16px; }
     .message:not(:empty) { padding:12px; background:#f2efe5; border-radius:10px; }
-    #counts { font-size:13px; color:#736b5c; }
+    #counts { font-size:16px; color:#736b5c; }
     @media(min-width:640px) { .app-toolbar { max-width:760px; margin:auto; border:1px solid #e2dacb; border-radius:16px 16px 0 0; } .admin-wrap { padding-top:28px; } }
     @media(max-width:380px) { .admin-wrap { padding-left:10px;padding-right:10px; } .admin-card,.booking { padding:16px; } .money-cell strong { font-size:18px; } }
   </style>
