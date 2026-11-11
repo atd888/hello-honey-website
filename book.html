@@ -108,6 +108,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
                 <label><input type="checkbox" name="Treatment" value="Gel Manicure"> Gel Manicure — £32</label>
                 <label><input type="checkbox" name="Treatment" value="BIAB Manicure"> BIAB Manicure — £42</label>
                 <label><input type="checkbox" name="Treatment" value="BIAB Infills"> BIAB Infills — £38</label>
+                <label><input type="checkbox" name="Treatment" value="Acrylic Full Set"> Acrylic Full Set with Gel Polish — £40</label>
                 <label><input type="checkbox" name="Treatment" value="Pedicure"> Gel Pedicure — £42</label>
                 <label><input type="checkbox" name="Treatment" value="Nail Art"> Nail Art — from £5</label>
                 <label><input type="checkbox" name="Treatment" value="Gel Removal"> Gel Removal — £15 alone / £8 with another treatment</label>
@@ -152,7 +153,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
             <h3>Your estimated total</h3>
             Choose your treatments to see the price. The 10% first-appointment offer is applied automatically when eligible; there is no travel charge.
             <p><strong>Total: £<span id="estimated-total">0</span></strong></p>
-            <p>This is an estimate. Your final price will be confirmed before your booking is accepted. Nail art may cost more depending on the design.</p>
+            <p>This is an estimate. Your final price will be confirmed before your booking is accepted. Acrylic full set includes one gel polish colour. Nail art and acrylic removal are extra; any additional cost for length or design is agreed before confirmation.</p>
           </div>
 
           <label class="consent">
@@ -219,6 +220,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
       "Gel Manicure": 32,
       "BIAB Manicure": 42,
       "BIAB Infills": 38,
+      "Acrylic Full Set": 40,
       "Pedicure": 42,
       "Nail Art": 5
     };
@@ -243,6 +245,7 @@ body{padding-bottom:calc(80px + env(safe-area-inset-bottom,0px))}
   const serviceMap = {
     "The Gel Manicure": "Gel Manicure",
     "The BIAB Manicure": "BIAB Manicure",
+    "The Acrylic Full Set": "Acrylic Full Set",
     "The Feel-good Pedicure": "Pedicure",
     "A Little Nail Art": "Nail Art",
     "Gentle Gel Removal": "Gel Removal"
