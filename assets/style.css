@@ -107,3 +107,4 @@ footer {
 .card-price{margin:-4px 0 10px;font-weight:700;color:var(--ink);font-size:17px}
 .areas-list{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:900px;margin:22px auto 0;padding:0;list-style:none}
 .areas-list li{background:#fff9ed;border:1px solid var(--line);border-radius:999px;padding:8px 16px;font-size:16px}
+.areas-list a{text-decoration:underline;text-decoration-color:var(--gold);text-underline-offset:3px}
